@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".loginActivity">
+    tools:context=".Activity.loginActivity">
 
     <RelativeLayout
         android:id="@+id/background"
@@ -15,7 +15,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@mipmap/background3" />
+            android:background="@drawable/login_image_background" />
         <ImageView
             android:layout_centerInParent="true"
             android:src="@mipmap/logo"
