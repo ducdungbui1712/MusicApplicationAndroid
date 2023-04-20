@@ -12,10 +12,10 @@
         android:theme="@style/Theme.MusicApplication"
         tools:targetApi="31">
         <activity
-            android:name=".loginActivity"
+            android:name=".Activity.loginActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".Activity.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
