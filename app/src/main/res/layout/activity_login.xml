@@ -33,6 +33,9 @@
         android:orientation="vertical">
         <EditText
             android:id="@+id/edtEmail"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:paddingLeft="10dp"
             android:background="@drawable/layout_editext_login"
             android:textSize="13sp"
@@ -41,29 +44,28 @@
             android:drawablePadding="10dp"
             android:drawableLeft="@drawable/ic_baseline_email_24"
             android:hint="Email"
-            android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"/>
+            />
 
         <EditText
             android:inputType="textPassword"
             android:id="@+id/edtPassword"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:paddingLeft="10dp"
             android:background="@drawable/layout_editext_login"
             android:textSize="13sp"
             android:layout_marginHorizontal="20dp"
             android:layout_marginVertical="10dp"
             android:drawablePadding="10dp"
-            android:drawableLeft="@drawable/ic_baseline_info_24"
-            android:hint="Password"
-            android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"/>
+            android:drawableLeft="@drawable/ic_baseline_password_24"
+            android:hint="Password" />
 
         <Button
             android:id="@+id/btnLogin"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:layout_marginHorizontal="20dp"
             android:layout_marginVertical="10dp"
             android:backgroundTint="@color/grey"
@@ -72,35 +74,7 @@
             android:textColor="@color/white"
             android:textSize="15sp"
             app:cornerRadius="10dp" />
-        <RelativeLayout
-            android:layout_marginRight="20dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="5dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <TextView
-                android:id="@+id/txtCreateAccount"
-                android:textSize="13sp"
-                android:textColor="@color/grey"
-                android:text="Create new account"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-            <TextView
-                android:id="@+id/txtForgotPassword"
-                android:layout_alignParentEnd="true"
-                android:textSize="13sp"
-                android:textColor="@color/grey"
-                android:text="Forgot password?"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-        </RelativeLayout>
-        <TextView
-            android:textColor="#9C9D9F"
-            android:padding="10dp"
-            android:gravity="center"
-            android:text="Or"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -108,6 +82,42 @@
         android:layout_weight="1"
         android:orientation="vertical"
         android:layout_marginTop="10dp">
+        <LinearLayout
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/txtCreateAccount"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="13sp"
+                    android:textColor="@color/grey"
+                    android:text="Create new account" />
+                <TextView
+                    android:id="@+id/txtForgotPassword"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="13sp"
+                    android:textColor="@color/grey"
+                    android:text="Forgot password?"
+                    android:gravity="end"/>
+            </LinearLayout>
+            <TextView
+                android:textColor="#9C9D9F"
+                android:padding="10dp"
+                android:gravity="center"
+                android:text="Or"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
