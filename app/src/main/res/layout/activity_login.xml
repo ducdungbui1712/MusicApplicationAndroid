@@ -99,7 +99,7 @@
                     android:layout_weight="1"
                     android:textSize="13sp"
                     android:textColor="@color/grey"
-                    android:text="Create new account" />
+                    android:text="Create new account?" />
                 <TextView
                     android:id="@+id/txtForgotPassword"
                     android:layout_width="0dp"
