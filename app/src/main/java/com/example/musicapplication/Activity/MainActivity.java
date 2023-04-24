@@ -24,6 +24,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.musicapplication.Fragment.AlbumsFragment;
 import com.example.musicapplication.Fragment.HomeFragment;
+import com.example.musicapplication.Fragment.HomeTabFragment;
 import com.example.musicapplication.Fragment.PersonalMusicFragment;
 import com.example.musicapplication.Fragment.SearchFragment;
 import com.example.musicapplication.Fragment.TopicFragment;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setSupportActionBar(toolbar);
         setTitle("");
         toolbarLogo.setOnClickListener(view -> {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new HomeFragment()).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new HomeTabFragment()).commit();
             navigationView.setCheckedItem(R.id.navHome);
         });
 
@@ -72,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new HomeFragment()).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new HomeTabFragment()).commit();
             navigationView.setCheckedItem(R.id.navHome);
         }
 
@@ -110,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.navHome:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new HomeFragment()).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new HomeTabFragment()).commit();
                 break;
             case R.id.navTopic:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new TopicFragment()).commit();
