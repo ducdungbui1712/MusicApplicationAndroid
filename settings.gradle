@@ -10,6 +10,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+
+        // ImageSlider
+        maven { url 'https://jitpack.io' }
     }
 }
 rootProject.name = "MusicApplication"

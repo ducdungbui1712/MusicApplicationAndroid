@@ -3,12 +3,9 @@ package com.example.musicapplication.Activity;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -23,10 +20,9 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.musicapplication.Fragment.AlbumsFragment;
-import com.example.musicapplication.Fragment.HomeFragment;
-import com.example.musicapplication.Fragment.HomeTabFragment;
+import com.example.musicapplication.Fragment.Home.HomeTabFragment;
 import com.example.musicapplication.Fragment.PersonalMusicFragment;
-import com.example.musicapplication.Fragment.SearchFragment;
+import com.example.musicapplication.Fragment.ProfileFragment;
 import com.example.musicapplication.Fragment.TopicFragment;
 import com.example.musicapplication.R;
 import com.google.android.material.navigation.NavigationView;
@@ -43,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     Toolbar toolbar;
-    ImageView imageViewUserAva, toolbarLogo;
+    ImageView imageViewUserAva, toolbarLogo, imageViewEdit;
     TextView txtUserName, txtUserMail;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,10 +59,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Set Nav Menu
         firebaseUser = firebaseAuth.getCurrentUser();
         View headerView = navigationView.getHeaderView(0);
+        imageViewEdit = headerView.findViewById(R.id.imageViewEdit);
         imageViewUserAva = headerView.findViewById(R.id.imageViewUserAva);
         txtUserName = headerView.findViewById(R.id.txtUserName);
         txtUserMail = headerView.findViewById(R.id.txtUserMail);
         getUser();
+
+        //Edit profile click event
+        imageViewEdit.setOnClickListener(view -> {
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new ProfileFragment()).commit();
+            drawerLayout.closeDrawer(GravityCompat.START);
+        });
 
         navigationView.setNavigationItemSelectedListener(this);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open_nav, R.string.close_nav);
@@ -145,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         firebaseFirestore = FirebaseFirestore.getInstance();
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         toolbarLogo = findViewById(R.id.toolbarLogo);
     }
 }

@@ -1,8 +1,9 @@
-package com.example.musicapplication.Fragment;
+package com.example.musicapplication.Fragment.Home;
 
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import android.view.LayoutInflater;
@@ -24,9 +25,7 @@ public class HomeTabFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home_tab, container, false);
         tablayout = view.findViewById(R.id.tabLayout);
         viewPager = view.findViewById(R.id.viewPager);
-        viewPagerHomeAdapter= new ViewPagerHomeAdapter(getFragmentManager());
-        viewPagerHomeAdapter.addFragment(new HomeFragment(), "Home");
-        viewPagerHomeAdapter.addFragment(new PersonalMusicFragment(), "Personal Music");
+        viewPagerHomeAdapter= new ViewPagerHomeAdapter(getFragmentManager(), FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         viewPager.setAdapter(viewPagerHomeAdapter);
         tablayout.setupWithViewPager(viewPager);
         return view;

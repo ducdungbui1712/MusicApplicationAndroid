@@ -5,35 +5,41 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 
+import com.example.musicapplication.Fragment.HomeFragment;
+import com.example.musicapplication.Fragment.PersonalMusicFragment;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class ViewPagerHomeAdapter extends FragmentStatePagerAdapter {
-    private final List<Fragment> mFragmentList = new ArrayList<>();
-    private final List<String> mFragmentTitleList = new ArrayList<>();
-
-    public ViewPagerHomeAdapter(FragmentManager fm) {
-        super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+    public ViewPagerHomeAdapter(@NonNull FragmentManager fm, int behavior) {
+        super(fm, behavior);
     }
 
-    @NonNull
-    @Override
     public Fragment getItem(int position) {
-        return mFragmentList.get(position);
+        switch (position)
+        {
+            case 0: return new HomeFragment();
+            case 1: return new PersonalMusicFragment();
+            default: return new HomeFragment();
+        }
     }
 
     @Override
     public int getCount() {
-        return mFragmentList.size();
+        return 2;
     }
-
     @Override
     public CharSequence getPageTitle(int position) {
-        return mFragmentTitleList.get(position);
-    }
-
-    public void addFragment(Fragment fragment, String title) {
-        mFragmentList.add(fragment);
-        mFragmentTitleList.add(title);
+        String Title="";
+        switch (position){
+            case 0:
+                Title="Home";
+                break;
+            case 1:
+                Title="Personal Music";
+                break;
+        }
+        return Title;
     }
 }
