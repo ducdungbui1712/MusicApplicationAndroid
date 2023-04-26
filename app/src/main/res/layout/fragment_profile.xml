@@ -22,10 +22,26 @@
             android:padding="20dp"
             android:background="@drawable/profile_fragment_edit_border">
 
-            <ImageView
-                android:id="@+id/imageViewUserAva"
-                android:layout_width="150dp"
-                android:layout_height="150dp"/>
+            <RelativeLayout
+                android:layout_width="160dp"
+                android:layout_height="160dp">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/imageViewUserAva"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"/>
+
+                <ImageView
+                    android:id="@+id/imageViewEditIcon"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_alignEnd="@id/imageViewUserAva"
+                    android:layout_alignBottom="@id/imageViewUserAva"
+                    android:layout_marginEnd="0dp"
+                    android:layout_marginBottom="3dp"
+                    android:src="@drawable/profile_fragment_ic_edit" />
+
+            </RelativeLayout>
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnEditProfile"

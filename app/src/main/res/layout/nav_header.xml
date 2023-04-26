@@ -12,7 +12,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <ImageView
+        <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/imageViewUserAva"
             android:layout_width="80dp"
             android:layout_height="80dp" />
@@ -23,7 +23,7 @@
             android:layout_height="40dp"
             android:layout_marginLeft="10dp"
             android:layout_gravity="center_vertical"
-            android:background="@drawable/nav_menu_edit"/>
+            android:background="@drawable/nav_header_ic_edit"/>
     </LinearLayout>
 
     <TextView

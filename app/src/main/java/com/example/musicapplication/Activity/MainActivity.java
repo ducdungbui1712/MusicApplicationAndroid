@@ -1,6 +1,7 @@
 package com.example.musicapplication.Activity;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -30,7 +31,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private FirebaseAuth firebaseAuth;
@@ -39,7 +44,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     Toolbar toolbar;
-    ImageView imageViewUserAva, toolbarLogo, imageViewEdit;
+    ImageView toolbarLogo, imageViewEdit;
+    CircleImageView imageViewUserAva;
     TextView txtUserName, txtUserMail;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,20 +98,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void getUser() {
         DocumentReference documentReference = firebaseFirestore.collection("Users").document(firebaseUser.getUid());
-        documentReference.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                DocumentSnapshot document = task.getResult();
-                String Username = document.getString("Username");
-                String Ava = document.getString("Avatar");
-                String Email = document.getString("Email");
+        documentReference.addSnapshotListener((documentSnapshot, e) -> {
+            if (e != null) {
+                Log.d("TAG", "Listen failed.", e);
+                return;
+            }
+
+            if (documentSnapshot != null && documentSnapshot.exists()) {
+                String Username = documentSnapshot.getString("Username");
+                String Ava = documentSnapshot.getString("Avatar");
+                String Email = documentSnapshot.getString("Email");
                 Glide.with(getApplicationContext())
                         .load(Ava).circleCrop()
                         .into(imageViewUserAva);
                 txtUserName.setText(Username);
                 txtUserMail.setText(Email);
-            } else
-            {
-                Log.d("TAG", "get failed with ", task.getException());
+            } else {
+                Log.d("TAG", "Current data: null");
             }
         });
     }
