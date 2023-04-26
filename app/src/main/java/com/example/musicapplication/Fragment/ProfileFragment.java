@@ -1,7 +1,10 @@
 package com.example.musicapplication.Fragment;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -9,9 +12,12 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -49,26 +55,11 @@ public class ProfileFragment extends Fragment {
         btnLogout = view.findViewById(R.id.btnLogout);
 
         btnEditProfile.setOnClickListener(view1 -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-            View dialogView = getLayoutInflater().inflate(R.layout.fragment_profile_edit_info_dialog,null);
-            edtUsername = dialogView.findViewById(R.id.edtUsername);
-            edtEmail = dialogView.findViewById(R.id.edtEmail);
-            edtAddress = dialogView.findViewById(R.id.edtAddress);
-            edtPhone = dialogView.findViewById(R.id.edtPhone);
-            btnCancel = dialogView.findViewById(R.id.btnCancel);
-            btnReset = dialogView.findViewById(R.id.btnReset);
-            getUser();
-            builder.setView(dialogView);
-            AlertDialog dialog = builder.create();
+            showDialogEditProfile();
+        });
 
-            btnReset.setOnClickListener(view2 -> {
-                updateUserInfo();
-            });
-
-            btnCancel.setOnClickListener(view2 -> {
-                dialog.dismiss();
-            });
-            dialog.show();
+        btnChangePassword.setOnClickListener(view1 -> {
+            showDialogChangePassword();
         });
 
         btnLogout.setOnClickListener(view1 -> {
@@ -77,6 +68,59 @@ public class ProfileFragment extends Fragment {
             getActivity().finish();
         });
         return view;
+    }
+
+    private void showDialogEditProfile() {
+        Dialog dialog = new Dialog(getContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.fragment_profile_edit_info_dialog);
+
+        Window window = dialog.getWindow();
+        if(window == null){
+            return;
+        }
+
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        WindowManager.LayoutParams windowAttributes = window.getAttributes();
+        windowAttributes.gravity = Gravity.CENTER;
+        window.setAttributes(windowAttributes);
+        dialog.setCanceledOnTouchOutside(true);
+        edtUsername = dialog.findViewById(R.id.edtUsername);
+        edtEmail = dialog.findViewById(R.id.edtEmail);
+        edtAddress = dialog.findViewById(R.id.edtAddress);
+        edtPhone = dialog.findViewById(R.id.edtPhone);
+        btnCancel = dialog.findViewById(R.id.btnCancel);
+        btnReset = dialog.findViewById(R.id.btnReset);
+        getUser();
+
+        btnReset.setOnClickListener(view2 -> {
+            updateUserInfo();
+        });
+
+        btnCancel.setOnClickListener(view2 -> {
+            dialog.dismiss();
+        });
+        dialog.show();
+    }
+
+    private void showDialogChangePassword() {
+        Dialog dialog = new Dialog(getContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.fragment_profile_change_password_dialog);
+
+        Window window = dialog.getWindow();
+        if(window == null){
+            return;
+        }
+
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        WindowManager.LayoutParams windowAttributes = window.getAttributes();
+        windowAttributes.gravity = Gravity.CENTER;
+        window.setAttributes(windowAttributes);
+        dialog.setCanceledOnTouchOutside(true);
+        dialog.show();
     }
 
     private void getUser() {
