@@ -21,7 +21,9 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.musicapplication.Fragment.AlbumsFragment;
+import com.example.musicapplication.Fragment.ArtistFragment;
 import com.example.musicapplication.Fragment.Home.HomeTabFragment;
+import com.example.musicapplication.Fragment.NewSongFragment;
 import com.example.musicapplication.Fragment.PersonalMusicFragment;
 import com.example.musicapplication.Fragment.ProfileFragment;
 import com.example.musicapplication.Fragment.TopicFragment;
@@ -128,8 +130,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.navTopic:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new TopicFragment()).commit();
                 break;
+            case R.id.navNewSong:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new NewSongFragment()).commit();
+                break;
             case R.id.navAlbums:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new AlbumsFragment()).commit();
+                break;
+            case R.id.navArtist:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new ArtistFragment()).commit();
                 break;
             case R.id.navPersonalMusic:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new PersonalMusicFragment()).commit();

@@ -18,9 +18,19 @@
             android:title="Topic"/>
 
         <item
+            android:id="@+id/navNewSong"
+            android:icon="@drawable/nav_menu_new_song"
+            android:title="New Song"/>
+
+        <item
             android:id="@+id/navAlbums"
             android:icon="@drawable/nav_menu_album"
             android:title="Albums"/>
+
+        <item
+            android:id="@+id/navArtist"
+            android:icon="@drawable/nav_menu_artist"
+            android:title="Artist"/>
 
         <item
             android:id="@+id/navPersonalMusic"
