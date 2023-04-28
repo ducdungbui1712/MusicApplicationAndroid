@@ -1,7 +1,6 @@
 package com.example.musicapplication.Adapter;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,8 +17,6 @@ import com.bumptech.glide.Glide;
 import com.example.musicapplication.Fragment.PlaySongFragment;
 import com.example.musicapplication.Model.Song;
 import com.example.musicapplication.R;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -27,6 +24,10 @@ import java.util.ArrayList;
 public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHolder>{
     Context context;
     ArrayList<Song> arrayList;
+
+    public ArrayList<Song> getArrayList() {
+        return arrayList;
+    }
 
     public NewSongAdapter(Context context, ArrayList<Song> arrayList) {
         this.context = context;
@@ -44,6 +45,13 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
     @Override
     public void onBindViewHolder(@NonNull NewSongAdapter.ViewHolder holder, int position) {
         Song song = arrayList.get(position);
+
+        // Create bundle for PlaySongFragment
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("song", song);
+        PlaySongFragment playSongFragment = new PlaySongFragment();
+
+
         Glide.with(context)
                 .load(song.getImage())
                 .into(holder.imageViewAlbumArt);
@@ -52,33 +60,38 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
         OnAlbumTitleCallback albumTitleCallback = albumTitle -> {
             // Hiển thị albumTitle lên TextView
             holder.album.setText(albumTitle);
+            bundle.putString("albumTitle", albumTitle);
         };
 
         OnSingerNameCallback singerNameCallback = singerName -> {
             // Hiển thị singerName lên TextView
             holder.artist.setText(singerName);
+            bundle.putString("singerName", singerName);
         };
 
         // Gọi hàm getAlbumTitle()
-        getAlbumTitle(song, albumTitleCallback);
-        getSingerName(song, singerNameCallback);
+        if (song.getIdAlbum() != null){
+            getAlbumTitle(song, albumTitleCallback);
+            getSingerName(song, singerNameCallback);
+        }else {
+            holder.album.setText("");
+            getSingerName(song, singerNameCallback);
+        }
 
         holder.rankSong.setText(String.valueOf(position + 1));
         holder.songName.setText(song.getTitle());
         holder.time.setText(song.getDuration());
         holder.itemView.setOnClickListener(v -> {
-            PlaySongFragment playerFragment = new PlaySongFragment();
-            Bundle bundle = new Bundle();
-            bundle.putParcelable("song", song);
-            playerFragment.setArguments(bundle);
+            playSongFragment.setArguments(bundle);
             FragmentTransaction fragmentTransaction = ((AppCompatActivity)context).getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.fragmentLayout,playerFragment);
+            fragmentTransaction.replace(R.id.fragmentLayout,playSongFragment);
             fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
         });
-
     }
+
+
 
     private void getAlbumTitle(Song song, OnAlbumTitleCallback albumTitleCallback) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
