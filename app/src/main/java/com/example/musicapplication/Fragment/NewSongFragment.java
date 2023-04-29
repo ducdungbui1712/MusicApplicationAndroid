@@ -42,8 +42,8 @@ public class NewSongFragment extends Fragment {
         firebaseFirestore = FirebaseFirestore.getInstance();
         recyclerViewNewSongs = view.findViewById(R.id.recyclerViewNewSongs);
         songs = new ArrayList<>();
-        newSongAdapter = new NewSongAdapter(getContext(), songs);
         getSongs();
+        newSongAdapter = new NewSongAdapter(getContext(), songs);
         recyclerViewNewSongs.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
         recyclerViewNewSongs.setAdapter(newSongAdapter);
 
@@ -82,7 +82,6 @@ public class NewSongFragment extends Fragment {
                 newSongAdapter.notifyDataSetChanged();
             }
         }).addOnFailureListener(e -> Log.d("TAG","Error"));
-
     }
 
 }

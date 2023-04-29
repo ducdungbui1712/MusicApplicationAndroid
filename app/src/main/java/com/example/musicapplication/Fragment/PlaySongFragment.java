@@ -22,8 +22,13 @@ import com.bumptech.glide.Glide;
 import com.example.musicapplication.Adapter.NewSongAdapter;
 import com.example.musicapplication.Model.Song;
 import com.example.musicapplication.R;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -36,21 +41,23 @@ public class PlaySongFragment extends Fragment {
     ArrayList<Song> arrayList;
     public ObjectAnimator objectAnimator;
     ImageView backArrow;
-    TextView songTitle, album, artist, timeDuration, timeLeft;
+    TextView songTitle, albumTitle, artistName, timeDuration, timeLeft;
     ImageButton shuffle, previous, play, next, repeat;
     MediaPlayer mediaPlayer;
     SeekBar seekBar;
     Handler handler;
-
+    ArrayList<Song> songs;
+    Song song;
+    FirebaseFirestore firebaseFirestore;
     boolean isRepeat = false;
+    boolean isShuffle = false;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        Song song = getArguments().getParcelable("song");
-
-
+        song = getArguments().getParcelable("song");
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_play_song, container, false);
         init(view);
@@ -61,12 +68,22 @@ public class PlaySongFragment extends Fragment {
 
     private void clickEvent(Song song) {
         backArrow.setOnClickListener(view1 -> {
-            getActivity().getSupportFragmentManager().popBackStack();
+            ViewGroup.LayoutParams params = view.getLayoutParams();
+            params.height = (int) getResources().getDimension(R.dimen.minimized_fragment_height);
+            view.setLayoutParams(params);
         });
 
         shuffle.setOnClickListener(view1 -> {
-            NewSongAdapter newSongAdapter = new NewSongAdapter();
+            isShuffle = !isShuffle;
+            if (isShuffle) {
+                // Set shuffle image to on
+                shuffle.setImageResource(R.mipmap.shuffle_on);
+            } else {
+                // Set shuffle image to off
+                shuffle.setImageResource(R.mipmap.shuffle);
+            }
         });
+
 
         previous.setOnClickListener(view1 -> {
 
@@ -123,44 +140,74 @@ public class PlaySongFragment extends Fragment {
             }
         });
     }
+
     private void loadData(Song song) {
-        getAlbums(song.getIdAlbum());
+        songTitle.setText(song.getTitle());
+        getAlbumAndArtistTitle(song);
+        timeDuration.setText(song.getDuration());
+        playSong(song);
+
         Glide.with(getContext())
                 .load(song.getImage())
                 .into(imageView);
-        songTitle.setText(song.getTitle());
-        album.setText(getArguments().getString("albumTitle"));
-        artist.setText(getArguments().getString("singerName"));
-        timeDuration.setText(song.getDuration());
-        playSong(song);
     }
 
-    private void getAlbums(String idAlbum) {
+    private void getAlbumAndArtistTitle(Song song) {
+        firebaseFirestore = FirebaseFirestore.getInstance();
+        DocumentReference albumRef = firebaseFirestore.collection("Albums").document(song.getIdAlbum().trim());
+        DocumentReference artistRef = firebaseFirestore.collection("Singer").document(song.getIdSinger().trim());
 
+        albumRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                String albumName = documentSnapshot.getString("title");
+                albumTitle.setText(albumName);
+            }
+        });
+
+        artistRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                String singerName = documentSnapshot.getString("name");
+                artistName.setText(singerName);
+            }
+        });
     }
+
 
     private void playSong(Song song) {
         String link = song.getLink();
         if (mediaPlayer == null) {
-            mediaPlayer = new MediaPlayer();
-            try {
-                mediaPlayer.setDataSource(link);
-                mediaPlayer.prepare();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
             objectAnimator = ObjectAnimator.ofFloat(imageView, "rotation", 0f, 360f);
             objectAnimator.setDuration(10000);
             objectAnimator.setRepeatCount(ValueAnimator.INFINITE);
             objectAnimator.setRepeatMode(ValueAnimator.RESTART);
             objectAnimator.setInterpolator(new LinearInterpolator());
             objectAnimator.start();
-            mediaPlayer.start();
-            play.setImageResource(R.mipmap.pause);
-            seekBar.setMax(mediaPlayer.getDuration());
-            updateSeekBar();
+
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setOnPreparedListener(mp -> {
+                mediaPlayer.start();
+                play.setImageResource(R.mipmap.pause);
+                seekBar.setMax(mediaPlayer.getDuration());
+                updateSeekBar();
+            });
+
+            try {
+                mediaPlayer.setDataSource(link);
+                mediaPlayer.prepareAsync();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
+
+    public void stopMusic() {
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+    }
+
 
     private void updateSeekBar() {
         handler = new Handler();
@@ -177,13 +224,12 @@ public class PlaySongFragment extends Fragment {
         onFinish();
     }
     public void onFinish() {
-        // Hết thời gian
-        // Sự kiện kết thúc nhạc
         mediaPlayer.setOnCompletionListener(mp -> {
             play.setImageResource(R.mipmap.play);
             objectAnimator.end();
         });
     }
+
 
     private void init(View view) {
         shuffle = view.findViewById(R.id.shuffle);
@@ -192,8 +238,8 @@ public class PlaySongFragment extends Fragment {
         next = view.findViewById(R.id.next);
         repeat = view.findViewById(R.id.repeat);
         songTitle = view.findViewById(R.id.songTitle);
-        album = view.findViewById(R.id.album);
-        artist = view.findViewById(R.id.artist);
+        albumTitle = view.findViewById(R.id.albumTitle);
+        artistName = view.findViewById(R.id.artistName);
         timeDuration = view.findViewById(R.id.timeDuration);
         timeLeft = view.findViewById(R.id.timeLeft);
         seekBar = view.findViewById(R.id.seekBar);
