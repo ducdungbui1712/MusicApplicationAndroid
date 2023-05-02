@@ -1,6 +1,7 @@
 package com.example.musicapplication.Adapter;
 
 import android.content.Context;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,13 +20,18 @@ import com.bumptech.glide.Glide;
 import com.example.musicapplication.Fragment.PlaySongFragment;
 import com.example.musicapplication.Model.Song;
 import com.example.musicapplication.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHolder>{
     Context context;
     ArrayList<Song> arrayList;
+    MediaPlayer mediaPlayer;
 
     public ArrayList<Song> getArrayList() {
         return arrayList;
@@ -34,6 +40,7 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
     public NewSongAdapter(Context context, ArrayList<Song> arrayList) {
         this.context = context;
         this.arrayList = arrayList;
+        this.mediaPlayer = new MediaPlayer();
     }
 
     @NonNull
@@ -55,34 +62,66 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
                 .load(song.getImage())
                 .into(holder.imageViewAlbumArt);
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Bundle bundle = new Bundle();
-                bundle.putParcelable("song", song);
-
-                PlaySongFragment playSongFragment = new PlaySongFragment();
-                playSongFragment.setArguments(bundle);
-
-                FragmentTransaction fragmentTransaction = ((AppCompatActivity)context)
-                        .getSupportFragmentManager()
-                        .beginTransaction();
-
-                String fragmentTag = "PlaySongFragmentTag"; // tag for the fragment
-
-                Fragment currentFragment = ((AppCompatActivity)context)
-                        .getSupportFragmentManager()
-                        .findFragmentByTag(fragmentTag); // find the current fragment by tag
-
-                if (currentFragment != null) {
-                    ((AppCompatActivity)context).getSupportFragmentManager().beginTransaction().remove(currentFragment).commit();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("Albums").document(song.getIdAlbum()).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if (document.exists()) {
+                    String albumName = document.getString("title");
+                    holder.album.setText(albumName);
                 }
-
-                fragmentTransaction.replace(R.id.fragmentLayout, playSongFragment, fragmentTag); // add the new fragment with the tag
-                fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.commit();
             }
+        });
+
+        db.collection("Singer").document(song.getIdSinger()).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if (document.exists()) {
+                    String singerName = document.getString("name");
+                    holder.artist.setText(singerName);
+                }
+            }
+        });
+
+        holder.itemView.setOnClickListener(v -> {
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.stop();
+                mediaPlayer.reset();
+            }
+
+            // Start playing the new song
+            try {
+                mediaPlayer.setDataSource(song.getLink());
+                mediaPlayer.prepare();
+                mediaPlayer.start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            Bundle bundle = new Bundle();
+            bundle.putParcelable("song", song);
+
+            PlaySongFragment playSongFragment = new PlaySongFragment();
+            playSongFragment.setArguments(bundle);
+
+            FragmentTransaction fragmentTransaction = ((AppCompatActivity)context)
+                    .getSupportFragmentManager()
+                    .beginTransaction();
+
+            String fragmentTag = "PlaySongFragmentTag"; // tag for the fragment
+
+            Fragment currentFragment = ((AppCompatActivity)context)
+                    .getSupportFragmentManager()
+                    .findFragmentByTag(fragmentTag); // find the current fragment by tag
+
+            if (currentFragment != null) {
+                ((AppCompatActivity)context).getSupportFragmentManager().beginTransaction().remove(currentFragment).commit();
+            }
+
+            fragmentTransaction.replace(R.id.fragmentLayout, playSongFragment, fragmentTag); // add the new fragment with the tag
+            fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
         });
     }
 

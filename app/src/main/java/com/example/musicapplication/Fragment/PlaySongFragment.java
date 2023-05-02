@@ -68,9 +68,7 @@ public class PlaySongFragment extends Fragment {
 
     private void clickEvent(Song song) {
         backArrow.setOnClickListener(view1 -> {
-            ViewGroup.LayoutParams params = view.getLayoutParams();
-            params.height = (int) getResources().getDimension(R.dimen.minimized_fragment_height);
-            view.setLayoutParams(params);
+            getFragmentManager().popBackStack();
         });
 
         shuffle.setOnClickListener(view1 -> {
@@ -199,15 +197,6 @@ public class PlaySongFragment extends Fragment {
             }
         }
     }
-
-    public void stopMusic() {
-        if (mediaPlayer != null) {
-            mediaPlayer.stop();
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
-    }
-
 
     private void updateSeekBar() {
         handler = new Handler();

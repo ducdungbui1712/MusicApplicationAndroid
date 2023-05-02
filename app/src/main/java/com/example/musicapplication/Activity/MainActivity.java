@@ -1,7 +1,6 @@
 package com.example.musicapplication.Activity;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -21,7 +20,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.musicapplication.Fragment.AlbumsFragment;
-import com.example.musicapplication.Fragment.ArtistFragment;
+import com.example.musicapplication.Fragment.SingerFragment;
 import com.example.musicapplication.Fragment.Home.HomeTabFragment;
 import com.example.musicapplication.Fragment.NewSongFragment;
 import com.example.musicapplication.Fragment.PersonalMusicFragment;
@@ -32,10 +31,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -137,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new AlbumsFragment()).commit();
                 break;
             case R.id.navArtist:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new ArtistFragment()).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new SingerFragment()).commit();
                 break;
             case R.id.navPersonalMusic:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new PersonalMusicFragment()).commit();

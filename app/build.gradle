@@ -58,4 +58,5 @@ dependencies {
     implementation 'com.github.denzcoskun:ImageSlideshow:0.1.2'
 
     implementation 'de.hdodenhof:circleimageview:3.1.0'
+    implementation 'com.sothree.slidinguppanel:library:3.4.0'
 }
