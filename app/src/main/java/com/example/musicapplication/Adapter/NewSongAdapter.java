@@ -1,27 +1,23 @@
 package com.example.musicapplication.Adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.MediaPlayer;
-import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.musicapplication.Fragment.PlaySongFragment;
 import com.example.musicapplication.Model.Song;
 import com.example.musicapplication.R;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -30,30 +26,32 @@ import java.util.ArrayList;
 
 public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHolder>{
     Context context;
-    ArrayList<Song> arrayList;
-    MediaPlayer mediaPlayer;
+    ArrayList<Song> songs;
+    static public MediaPlayer mediaPlayer;
+    RelativeLayout playerView;
+
 
     public ArrayList<Song> getArrayList() {
-        return arrayList;
+        return songs;
     }
 
-    public NewSongAdapter(Context context, ArrayList<Song> arrayList) {
+    public NewSongAdapter(Context context, ArrayList<Song> songs, RelativeLayout playerView) {
         this.context = context;
-        this.arrayList = arrayList;
-        this.mediaPlayer = new MediaPlayer();
+        this.songs = songs;
+        this.playerView = playerView;
     }
 
     @NonNull
     @Override
     public NewSongAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater=LayoutInflater.from(parent.getContext());
-        View itemview= inflater.inflate(R.layout.fragment_new_song_item_recycler_view,parent,false);
-        return new ViewHolder(itemview);
+        View itemView= inflater.inflate(R.layout.fragment_new_song_item_recycler_view,parent,false);
+        return new ViewHolder(itemView);
     }
 
     @Override
     public void onBindViewHolder(@NonNull NewSongAdapter.ViewHolder holder, int position) {
-        final Song song = arrayList.get(position);
+        final Song song = songs.get(position);
         holder.rankSong.setText(String.valueOf(position + 1));
         holder.songName.setText(song.getTitle());
         holder.time.setText(song.getDuration());
@@ -84,50 +82,39 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
         });
 
         holder.itemView.setOnClickListener(v -> {
-            if (mediaPlayer.isPlaying()) {
-                mediaPlayer.stop();
-                mediaPlayer.reset();
-            }
-
-            // Start playing the new song
-            try {
-                mediaPlayer.setDataSource(song.getLink());
-                mediaPlayer.prepare();
-                mediaPlayer.start();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            Bundle bundle = new Bundle();
-            bundle.putParcelable("song", song);
-
-            PlaySongFragment playSongFragment = new PlaySongFragment();
-            playSongFragment.setArguments(bundle);
-
-            FragmentTransaction fragmentTransaction = ((AppCompatActivity)context)
-                    .getSupportFragmentManager()
-                    .beginTransaction();
-
-            String fragmentTag = "PlaySongFragmentTag"; // tag for the fragment
-
-            Fragment currentFragment = ((AppCompatActivity)context)
-                    .getSupportFragmentManager()
-                    .findFragmentByTag(fragmentTag); // find the current fragment by tag
-
-            if (currentFragment != null) {
-                ((AppCompatActivity)context).getSupportFragmentManager().beginTransaction().remove(currentFragment).commit();
-            }
-
-            fragmentTransaction.replace(R.id.fragmentLayout, playSongFragment, fragmentTag); // add the new fragment with the tag
-            fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.commit();
+            playSong(song);
+            // Tạo một Intent với dữ liệu cần truyền đi
+            Intent intent = new Intent("sendSong");
+            intent.putExtra("song", song);
+            context.sendBroadcast(intent);
         });
     }
 
+    public void playSong(Song song) {
+        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+            mediaPlayer.reset();
+        }
+
+        // Start playing the new song
+        mediaPlayer = new MediaPlayer();
+        try {
+            mediaPlayer.setDataSource(song.getLink());
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+            Animation slide_up = AnimationUtils.loadAnimation(context,
+                    R.anim.slide_up);
+            playerView.setVisibility(View.VISIBLE);
+            playerView.startAnimation(slide_up);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     @Override
     public int getItemCount() {
-        return arrayList.size();
+        return songs.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

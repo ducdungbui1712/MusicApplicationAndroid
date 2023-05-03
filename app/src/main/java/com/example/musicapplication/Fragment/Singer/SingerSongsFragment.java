@@ -2,11 +2,10 @@ package com.example.musicapplication.Fragment.Singer;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -17,28 +16,26 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.example.musicapplication.Activity.MainActivity;
 import com.example.musicapplication.Adapter.NewSongAdapter;
-import com.example.musicapplication.Fragment.PlaySongFragment;
 import com.example.musicapplication.Model.Singer;
 import com.example.musicapplication.Model.Song;
 import com.example.musicapplication.R;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class SingerSongsFragment extends Fragment {
@@ -52,6 +49,7 @@ public class SingerSongsFragment extends Fragment {
     ImageView imageView;
     TextView textViewArtistName;
     Singer singer;
+    RelativeLayout playerView;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -106,7 +104,8 @@ public class SingerSongsFragment extends Fragment {
         textViewArtistName = view.findViewById(R.id.textViewArtistName);
         firebaseFirestore = FirebaseFirestore.getInstance();
         songs = new ArrayList<>();
-        adapter = new NewSongAdapter(getContext(), songs);
+        playerView = getActivity().findViewById(R.id.playerView);
+        adapter = new NewSongAdapter(getContext(), songs, playerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
         recyclerView.setAdapter(adapter);
         GetData();
@@ -148,18 +147,33 @@ public class SingerSongsFragment extends Fragment {
     private void eventClick() {
         floatingActionButton.setEnabled(true);
         floatingActionButton.setOnClickListener(v -> {
-            Bundle bundle = new Bundle();
-            bundle.putParcelableArrayList("listSong", songs);
-            PlaySongFragment playSongFragment = new PlaySongFragment();
-            playSongFragment.setArguments(bundle);
-
-            FragmentTransaction fragmentTransaction = ((AppCompatActivity)getContext())
-                    .getSupportFragmentManager()
-                    .beginTransaction();
-            fragmentTransaction.replace(R.id.fragmentLayout, playSongFragment);
-            fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.commit();
+            Intent intent = new Intent("sendListSongs");
+            intent.putExtra("sendListSongs", songs);
+            getContext().sendBroadcast(intent);
+//            if (NewSongAdapter.mediaPlayer != null && NewSongAdapter.mediaPlayer.isPlaying()) {
+//                NewSongAdapter.mediaPlayer.stop();
+//                NewSongAdapter.mediaPlayer.reset();
+//            }
+//
+//            // Start playing the new song
+//            NewSongAdapter.mediaPlayer = new MediaPlayer();
+//            try {
+//                NewSongAdapter.mediaPlayer.setDataSource(songs.get(0).getLink());
+//                NewSongAdapter.mediaPlayer.prepare();
+//                NewSongAdapter.mediaPlayer.start();
+//                Animation slide_up = AnimationUtils.loadAnimation(getContext(),
+//                        R.anim.slide_up);
+//                playerView.setVisibility(View.VISIBLE);
+//                playerView.startAnimation(slide_up);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            // Lấy ra MainActivity hiện tại
+//            MainActivity mainActivity = (MainActivity) getActivity();
+//            // Gọi phương thức loadData() trong MainActivity
+//            if (mainActivity != null) {
+//                mainActivity.loadData(songs.get(0));
+//            }
         });
     }
 }

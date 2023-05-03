@@ -2,7 +2,6 @@ package com.example.musicapplication.Adapter;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,13 +11,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.musicapplication.Fragment.PlaySongFragment;
-import com.example.musicapplication.Fragment.Singer.SingerAlbumsFragment;
 import com.example.musicapplication.Fragment.Singer.SingerTabFragment;
 import com.example.musicapplication.Model.Singer;
 import com.example.musicapplication.R;

@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import com.example.musicapplication.Adapter.NewSongAdapter;
 import com.example.musicapplication.Model.Song;
@@ -34,6 +35,8 @@ public class NewSongFragment extends Fragment {
     ArrayList<Song> songs;
     NewSongAdapter newSongAdapter;
 
+    RelativeLayout playerView;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -41,9 +44,10 @@ public class NewSongFragment extends Fragment {
         view = inflater.inflate(R.layout.fragment_new_song, container, false);
         firebaseFirestore = FirebaseFirestore.getInstance();
         recyclerViewNewSongs = view.findViewById(R.id.recyclerViewNewSongs);
+        playerView = getActivity().findViewById(R.id.playerView);
         songs = new ArrayList<>();
         getSongs();
-        newSongAdapter = new NewSongAdapter(getContext(), songs);
+        newSongAdapter = new NewSongAdapter(getContext(), songs, playerView);
         recyclerViewNewSongs.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
         recyclerViewNewSongs.setAdapter(newSongAdapter);
 
@@ -83,5 +87,4 @@ public class NewSongFragment extends Fragment {
             }
         }).addOnFailureListener(e -> Log.d("TAG","Error"));
     }
-
 }
