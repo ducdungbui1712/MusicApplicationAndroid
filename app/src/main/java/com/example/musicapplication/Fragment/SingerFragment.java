@@ -55,9 +55,9 @@ public class SingerFragment extends Fragment {
                 Log.d("TAG", "onSuccess: LIST EMPTY");
             } else {
                 for (DocumentSnapshot document : documentSnapshots) {
-                    String id = document.getId();
-                    String name = document.getString("name");
-                    String image = document.getString("image");
+                    String id = document.getId().trim();
+                    String name = document.getString("name").trim();
+                    String image = document.getString("image").trim();
                     List<String> idAlbum = (List<String>) document.get("idAlbum");
                     Singer Singer = new Singer(id,name,image,idAlbum);
                     singers.add(Singer);

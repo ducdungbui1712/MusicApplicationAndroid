@@ -10,7 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.musicapplication.Adapter.ViewPagerHomeAdapter;
 import com.example.musicapplication.Adapter.ViewPagerSingerAdapter;
 import com.example.musicapplication.Model.Singer;
 import com.example.musicapplication.R;

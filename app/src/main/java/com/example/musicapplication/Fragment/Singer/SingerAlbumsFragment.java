@@ -63,19 +63,19 @@ public class SingerAlbumsFragment extends Fragment {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if (!queryDocumentSnapshots.isEmpty()) {
                         for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-                            String id = documentSnapshot.getId();
-                            String image = documentSnapshot.getString("image");
-                            String singer = documentSnapshot.getString("singer");
-                            String title = documentSnapshot.getString("title");
+                            String id = documentSnapshot.getId().trim();
+                            String image = documentSnapshot.getString("image").trim();
+                            String singer = documentSnapshot.getString("singer").trim();
+                            String title = documentSnapshot.getString("title").trim();
                             Album album = new Album(id, image, singer, title);
                             albums.add(album);
                         }
                         adapter.notifyDataSetChanged();
                     } else {
-                        Log.d("No albums found for singer with id: ", singer.getId());
+                        Log.d("No albums found for singer with id: ", singer.getId().trim());
                     }
                 })
-                .addOnFailureListener(e -> Log.d("Error getting albums for singer with id: "+ singer.getId(), e.getMessage()));
+                .addOnFailureListener(e -> Log.d("Error getting albums for singer with id: "+ singer.getId().trim(), e.getMessage()));
     }
 
 

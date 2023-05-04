@@ -42,9 +42,9 @@ public class SingerAdapter extends RecyclerView.Adapter<SingerAdapter.ViewHolder
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         final Singer singer = singers.get(position);
-        holder.txtSingerName.setText(singer.getName());
+        holder.txtSingerName.setText(singer.getName().trim());
         Glide.with(context)
-                .load(singer.getImage())
+                .load(singer.getImage().trim())
                 .circleCrop()
                 .into(holder.imgSinger);
         holder.itemView.setOnClickListener(v -> {

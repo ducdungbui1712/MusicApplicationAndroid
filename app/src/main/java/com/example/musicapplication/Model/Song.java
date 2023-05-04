@@ -8,11 +8,11 @@ import com.google.firebase.Timestamp;
 import java.util.Date;
 
 public class Song implements Parcelable {
-    String id, duration, image, link, title, lyric, idGenre,idAlbum, idSinger, idTopic;
+    String id, duration, image, link, title, lyric,idAlbum, idSinger;
     int like;
     Timestamp release;
 
-    public Song(String id, String duration, String image,  String link, String title, String lyric, int like, Timestamp release, String idGenre, String idAlbum, String idSinger, String idTopic) {
+    public Song(String id, String duration, String image,  String link, String title, String lyric, int like, Timestamp release, String idAlbum, String idSinger) {
         this.id = id;
         this.duration = duration;
         this.image = image;
@@ -21,10 +21,8 @@ public class Song implements Parcelable {
         this.lyric = lyric;
         this.like = like;
         this.release = release;
-        this.idGenre = idGenre;
         this.idAlbum = idAlbum;
         this.idSinger = idSinger;
-        this.idTopic = idTopic;
 
     }
 
@@ -38,10 +36,8 @@ public class Song implements Parcelable {
         lyric = in.readString();
         like = in.readInt();
         release = new Timestamp(new Date(in.readLong()));
-        idGenre = in.readString();
         idAlbum = in.readString();
         idSinger = in.readString();
-        idTopic = in.readString();
     }
 
     public static final Creator<Song> CREATOR = new Creator<Song>() {
@@ -80,10 +76,6 @@ public class Song implements Parcelable {
         return lyric;
     }
 
-    public String getIdGenre() {
-        return idGenre;
-    }
-
     public String getIdAlbum() {
         return idAlbum;
     }
@@ -92,9 +84,6 @@ public class Song implements Parcelable {
         return idSinger;
     }
 
-    public String getIdTopic() {
-        return idTopic;
-    }
 
     public int getLike() {
         return like;
@@ -121,9 +110,7 @@ public class Song implements Parcelable {
         dest.writeString(lyric);
         dest.writeInt(like);
         dest.writeLong(release.toDate().getTime());
-        dest.writeString(idGenre);
         dest.writeString(idAlbum);
         dest.writeString(idSinger);
-        dest.writeString(idTopic);
     }
 }

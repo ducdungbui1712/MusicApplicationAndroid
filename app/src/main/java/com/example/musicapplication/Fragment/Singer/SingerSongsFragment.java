@@ -31,9 +31,11 @@ import com.example.musicapplication.R;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -70,14 +72,14 @@ public class SingerSongsFragment extends Fragment {
     }
 
     private void GetCasi() {
-        DocumentReference documentReference = firebaseFirestore.collection("Singer").document(singer.getId());
+        DocumentReference documentReference = firebaseFirestore.collection("Singer").document(singer.getId().trim());
         documentReference.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot document = task.getResult();
                 if (document.exists()) {
-                    String id = document.getId();
-                    String name = document.getString("name");
-                    String image = document.getString("image");
+                    String id = document.getId().trim();
+                    String name = document.getString("name").trim();
+                    String image = document.getString("image").trim();
                     collapsingToolbarLayout.setTitle(name);
                     textViewArtistName.setText(name);
                     Glide.with(getContext())
@@ -105,7 +107,7 @@ public class SingerSongsFragment extends Fragment {
         firebaseFirestore = FirebaseFirestore.getInstance();
         songs = new ArrayList<>();
         playerView = getActivity().findViewById(R.id.playerView);
-        adapter = new NewSongAdapter(getContext(), songs, playerView);
+        adapter = new NewSongAdapter(getContext(),null, songs, playerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
         recyclerView.setAdapter(adapter);
         GetData();
@@ -113,29 +115,27 @@ public class SingerSongsFragment extends Fragment {
 
     private void GetData() {
         songs.clear();
-        firebaseFirestore
-                .collection("Songs")
-                .whereEqualTo("idSinger",singer.getId())
+        CollectionReference songsRef = firebaseFirestore.collection("Songs");
+        Query query = songsRef.whereEqualTo("idSinger", singer.getId().trim());
+        query
                 .get()
                 .addOnSuccessListener(documentSnapshots -> {
                     if (documentSnapshots.isEmpty()) {
                         Log.d("TAG", "onSuccess: LIST EMPTY");
                     } else {
                         for (DocumentSnapshot document : documentSnapshots) {
-                            String id = document.getId();
-                            String duration = document.getString("duration");
-                            String image = document.getString("image");
-                            String link = document.getString("link");
-                            String title = document.getString("title");
-                            String lyric = document.getString("lyric");
+                            String id = document.getId().trim();
+                            String duration = document.getString("duration").trim();
+                            String image = document.getString("image").trim();
+                            String link = document.getString("link").trim();
+                            String title = document.getString("title").trim();
+                            String lyric = document.getString("lyric").trim();
                             int like = document.getLong("likes").intValue();
                             Timestamp release = document.getTimestamp("release");
-                            String idGenre =document.getString("idGenre");
-                            String idAlbum = document.getString("idAlbum");
-                            String idSinger = document.getString("idSinger");
-                            String idTopic = document.getString("idTopic");
+                            String idAlbum = document.getString("idAlbum").trim();
+                            String idSinger = document.getString("idSinger").trim();
 
-                            Song song = new Song(id, duration, image, link, title, lyric, like, release, idGenre, idAlbum,idSinger, idTopic);
+                            Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum,idSinger);
                             songs.add(song);
                         }
                         adapter.notifyDataSetChanged();
@@ -150,30 +150,30 @@ public class SingerSongsFragment extends Fragment {
             Intent intent = new Intent("sendListSongs");
             intent.putExtra("sendListSongs", songs);
             getContext().sendBroadcast(intent);
-//            if (NewSongAdapter.mediaPlayer != null && NewSongAdapter.mediaPlayer.isPlaying()) {
-//                NewSongAdapter.mediaPlayer.stop();
-//                NewSongAdapter.mediaPlayer.reset();
-//            }
-//
-//            // Start playing the new song
-//            NewSongAdapter.mediaPlayer = new MediaPlayer();
-//            try {
-//                NewSongAdapter.mediaPlayer.setDataSource(songs.get(0).getLink());
-//                NewSongAdapter.mediaPlayer.prepare();
-//                NewSongAdapter.mediaPlayer.start();
-//                Animation slide_up = AnimationUtils.loadAnimation(getContext(),
-//                        R.anim.slide_up);
-//                playerView.setVisibility(View.VISIBLE);
-//                playerView.startAnimation(slide_up);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//            // Lấy ra MainActivity hiện tại
-//            MainActivity mainActivity = (MainActivity) getActivity();
-//            // Gọi phương thức loadData() trong MainActivity
-//            if (mainActivity != null) {
-//                mainActivity.loadData(songs.get(0));
-//            }
+            if (NewSongAdapter.mediaPlayer != null && NewSongAdapter.mediaPlayer.isPlaying()) {
+                NewSongAdapter.mediaPlayer.stop();
+                NewSongAdapter.mediaPlayer.reset();
+            }
+
+            // Start playing the new song
+            NewSongAdapter.mediaPlayer = new MediaPlayer();
+            try {
+                NewSongAdapter.mediaPlayer.setDataSource(songs.get(0).getLink().trim());
+                NewSongAdapter.mediaPlayer.prepare();
+                NewSongAdapter.mediaPlayer.start();
+                Animation slide_up = AnimationUtils.loadAnimation(getContext(),
+                        R.anim.slide_up);
+                playerView.setVisibility(View.VISIBLE);
+                playerView.startAnimation(slide_up);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            // Lấy ra MainActivity hiện tại
+            MainActivity mainActivity = (MainActivity) getActivity();
+            // Gọi phương thức loadData() trong MainActivity
+            if (mainActivity != null) {
+                mainActivity.loadData(songs.get(0));
+            }
         });
     }
 }

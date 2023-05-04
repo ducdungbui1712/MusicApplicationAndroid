@@ -1,16 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
+xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+tools:context=".Fragment.PersonalMusicFragment"
+android:orientation="vertical">
+<Button
+    android:id="@+id/btnPlayAll"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:layout_marginHorizontal="20dp"
+    android:layout_marginVertical="20dp"
+    android:backgroundTint="#673AB7"
+    android:drawableLeft="@drawable/new_songs_ic_play_all"
+    android:text="Play all songs"
+    app:cornerRadius="30dp" />
+
+
+<androidx.recyclerview.widget.RecyclerView
+    android:id="@+id/recyclerViewPersonalSong"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Fragment.PersonalMusicFragment">
-
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:textSize="30sp"
-        android:text="Personal Music" />
-
-</FrameLayout>
+    android:layout_alignParentStart="true"
+    android:layout_alignParentTop="true"
+    android:scrollbars="vertical" />
+</LinearLayout>

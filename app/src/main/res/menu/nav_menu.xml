@@ -13,11 +13,6 @@
             android:title="Home"/>
 
         <item
-            android:id="@+id/navTopic"
-            android:icon="@drawable/nav_menu_topic"
-            android:title="Topic"/>
-
-        <item
             android:id="@+id/navNewSong"
             android:icon="@drawable/nav_menu_new_song"
             android:title="New Song"/>

@@ -21,7 +21,6 @@ import com.example.musicapplication.Model.Song;
 import com.example.musicapplication.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -29,41 +28,35 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHolder>{
+public class PersonalMusicAdapter extends RecyclerView.Adapter<PersonalMusicAdapter.ViewHolder>{
+
     Context context;
-    ArrayList<Song> rankSongs;
     ArrayList<Song> songs;
 
     static public MediaPlayer mediaPlayer;
     RelativeLayout playerView;
 
 
-    public NewSongAdapter(Context context, ArrayList<Song> rankSongs, ArrayList<Song> songs, RelativeLayout playerView) {
+    public PersonalMusicAdapter(Context context, ArrayList<Song> songs, RelativeLayout playerView) {
         this.context = context;
-        this.rankSongs = rankSongs;
         this.songs = songs;
         this.playerView = playerView;
     }
 
     @NonNull
     @Override
-    public NewSongAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public PersonalMusicAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater=LayoutInflater.from(parent.getContext());
-        View itemView= inflater.inflate(R.layout.fragment_new_song_item_recycler_view,parent,false);
+        View itemView= inflater.inflate(R.layout.fragment_personal_song_item_recycler_view,parent,false);
         return new ViewHolder(itemView);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull NewSongAdapter.ViewHolder holder, int position) {
-        Song song;
-        if(rankSongs != null){
-            song = rankSongs.get(position);
-        }else {
-            song = songs.get(position);
-        }
+    public void onBindViewHolder(@NonNull PersonalMusicAdapter.ViewHolder holder, int position) {
+        final Song song = songs.get(position);;
 
         holder.rankSong.setText(String.valueOf(position + 1));
-        holder.songName.setText(song.getTitle().trim());
+        holder.songName.setText(song.getTitle().trim().trim());
         holder.time.setText(song.getDuration().trim());
 
         Glide.with(context)
@@ -77,7 +70,7 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
             if (task.isSuccessful()) {
                 DocumentSnapshot document = task.getResult();
                 if (document.exists()) {
-                    String albumName = document.getString("title").trim();
+                    String albumName = document.getString("title");
                     holder.album.setText(albumName);
                 }
             }
@@ -103,42 +96,31 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
                     }
                 });
 
-        holder.like_item.setOnClickListener(view -> {
+        holder.like_item.setOnClickListener(v -> {
+            // Update songLiked array in Users collection
             firebaseFirestore.collection("Users").document(firebaseUser.getUid().trim())
-                    .get().addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            ArrayList<String> likedSongIds = (ArrayList<String>) documentSnapshot.get("songLiked");
-                            if (likedSongIds != null && likedSongIds.contains(song.getId().trim())) {
-                                // Remove the song from the liked list
-                                firebaseFirestore.collection("Users").document(firebaseUser.getUid().trim())
-                                        .update("songLiked", FieldValue.arrayRemove(song.getId().trim()))
-                                        .addOnSuccessListener(aVoid -> {
-                                            Log.d("TAG", "Song removed from liked list");
-                                            holder.like_item.setImageResource(R.mipmap.heart);
-                                        })
-                                        .addOnFailureListener(e -> Log.d("Error removing song from liked list: ", e.getMessage()));
-                            } else {
-                                // Add the song to the liked list
-                                firebaseFirestore.collection("Users").document(firebaseUser.getUid().trim())
-                                        .update("songLiked", FieldValue.arrayUnion(song.getId().trim()))
-                                        .addOnSuccessListener(aVoid -> {
-                                            Log.d("TAG", "Song added to liked list");
-                                            holder.like_item.setImageResource(R.mipmap.heart_on);
-                                        })
-                                        .addOnFailureListener(e -> Log.d("Error adding song to liked list: ", e.getMessage()));
-                            }
+                    .update("songLiked", FieldValue.arrayRemove(song.getId().trim()))
+                    .addOnSuccessListener(aVoid -> {
+                        Log.d("TAG", "Song removed from liked list");
+                        // Remove the song from the list and notify the adapter
+                        int index =  songs.indexOf(song);
+                        if (index != -1) {
+                            songs.remove(index);
+                            notifyItemRemoved(index);
                         }
-                    });
+                    })
+                    .addOnFailureListener(e -> Log.d("Error removing song from liked list: ", e.getMessage()));
         });
 
         holder.itemView.setOnClickListener(v -> {
             playSong(song);
             // Tạo một Intent với dữ liệu cần truyền đi
-            Intent intent = new Intent("sendSong");
+            Intent intent = new Intent("personalSong");
             intent.putExtra("song", song);
             intent.putExtra("songs", songs);
             context.sendBroadcast(intent);
         });
+
     }
 
     public void playSong(Song song) {
@@ -162,14 +144,9 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
         }
     }
 
-
     @Override
     public int getItemCount() {
-        if(rankSongs != null){
-            return rankSongs.size();
-        }else {
-            return songs.size();
-        }
+        return songs.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -183,7 +160,7 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
             album = itemView.findViewById(R.id.album);
             artist = itemView.findViewById(R.id.artist);
             time = itemView.findViewById(R.id.time);
-            like_item = itemView.findViewById(R.id.like_newSong_item);
+            like_item = itemView.findViewById(R.id.like_personalSong_item);
         }
     }
 }

@@ -1,66 +1,191 @@
 package com.example.musicapplication.Fragment;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.Button;
+import android.widget.RelativeLayout;
 
+import com.example.musicapplication.Activity.MainActivity;
+import com.example.musicapplication.Adapter.NewSongAdapter;
+import com.example.musicapplication.Adapter.PersonalMusicAdapter;
+import com.example.musicapplication.Model.Album;
+import com.example.musicapplication.Model.Song;
 import com.example.musicapplication.R;
+import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link PersonalMusicFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.io.IOException;
+import java.util.ArrayList;
+
 public class PersonalMusicFragment extends Fragment {
+    FirebaseFirestore firebaseFirestore;
+    FirebaseAuth firebaseAuth;
+    FirebaseUser firebaseUser;
+    View view;
+    RecyclerView recyclerViewPersonalSong;
+    ArrayList<Song> personalSongs;
+    ArrayList<Song> songs;
+    Song song;
+    ArrayList<String> trimmedSongIds;
+    PersonalMusicAdapter personalMusicAdapter;
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public PersonalMusicFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment PersonalMusicFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static PersonalMusicFragment newInstance(String param1, String param2) {
-        PersonalMusicFragment fragment = new PersonalMusicFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
+    RelativeLayout playerView;
+    Button btnPlayAll;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_personal_music, container, false);
+        view = inflater.inflate(R.layout.fragment_personal_music, container, false);
+        firebaseFirestore = FirebaseFirestore.getInstance();
+        firebaseAuth = FirebaseAuth.getInstance();
+        recyclerViewPersonalSong = view.findViewById(R.id.recyclerViewPersonalSong);
+        btnPlayAll = view.findViewById(R.id.btnPlayAll);
+        playerView = getActivity().findViewById(R.id.playerView);
+        personalSongs = new ArrayList<>();
+        songs = new ArrayList<>();
+        trimmedSongIds = new ArrayList<>();
+        getSongLiked();
+
+        personalMusicAdapter = new PersonalMusicAdapter(getContext(),personalSongs,playerView);
+        recyclerViewPersonalSong.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
+        recyclerViewPersonalSong.setAdapter(personalMusicAdapter);
+        return view;
+    }
+
+    private void getSongLiked() {
+        firebaseUser = firebaseAuth.getCurrentUser();
+        String userId = firebaseUser.getUid().trim();
+
+        DocumentReference docRef = firebaseFirestore.collection("Users").document(userId);
+        docRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                ArrayList<String> songLiked = (ArrayList<String>) documentSnapshot.get("songLiked");
+                for (String songId : songLiked) {
+                    trimmedSongIds.add(songId.trim());
+                }
+                Log.d("songLiked",String.valueOf(songLiked));
+                if(trimmedSongIds != null && !trimmedSongIds.isEmpty()){
+                    firebaseFirestore.collection("Songs")
+                            .whereIn("id", trimmedSongIds)
+                            .get()
+                            .addOnSuccessListener(queryDocumentSnapshots -> {
+                                if (!queryDocumentSnapshots.isEmpty()) {
+                                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                                        String id = document.getId().trim();
+                                        String duration = document.getString("duration").trim();
+                                        String image = document.getString("image").trim();
+                                        String link = document.getString("link").trim();
+                                        String title = document.getString("title").trim();
+                                        String lyric = document.getString("lyric");
+                                        int like = document.getLong("likes").intValue();
+                                        Timestamp release = document.getTimestamp("release");
+                                        String idAlbum = document.getString("idAlbum").trim();
+                                        String idSinger = document.getString("idSinger").trim();
+
+                                        Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum, idSinger);
+                                        personalSongs.add(song);
+                                    }
+                                    personalMusicAdapter.notifyDataSetChanged();
+
+                                } else {
+                                    Log.d("No song found for user with id: ", firebaseUser.getUid().trim());
+                                }
+                            })
+                            .addOnFailureListener(e -> Log.d("Error getting song for singer with id: "+ firebaseUser.getUid().trim(), e.getMessage()));
+                }
+                eventClick();
+            }
+            else {Log.d("Error getting songLiked: ", userId);}
+        }).addOnFailureListener(e -> Log.d("Error getting user: ", userId));
+    }
+
+    private void eventClick() {
+        btnPlayAll.setOnClickListener(v -> {
+            if (NewSongAdapter.mediaPlayer != null && NewSongAdapter.mediaPlayer.isPlaying()) {
+                NewSongAdapter.mediaPlayer.stop();
+                NewSongAdapter.mediaPlayer.reset();
+            }
+
+            // Start playing the new song
+            NewSongAdapter.mediaPlayer = new MediaPlayer();
+            try {
+                NewSongAdapter.mediaPlayer.setDataSource(personalSongs.get(0).getLink().trim());
+                NewSongAdapter.mediaPlayer.prepare();
+                NewSongAdapter.mediaPlayer.start();
+                Animation slide_up = AnimationUtils.loadAnimation(getContext(),
+                        R.anim.slide_up);
+                playerView.setVisibility(View.VISIBLE);
+                playerView.startAnimation(slide_up);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            // Lấy ra MainActivity hiện tại
+            MainActivity mainActivity = (MainActivity) getActivity();
+            // Gọi phương thức loadData() trong MainActivity
+            if (mainActivity != null) {
+                mainActivity.loadData(personalSongs.get(0));
+            }
+
+            Log.d( "personalSongs.size(): ", String.valueOf(personalSongs.size()));
+
+            if (personalSongs.size() > 1){
+                Intent intent = new Intent("sendListSongs");
+                intent.putExtra("sendListSongs", personalSongs);
+                getContext().sendBroadcast(intent);
+
+            }else {
+                // Query Firestore for all songs
+                songs.clear();
+                firebaseFirestore.collection("Songs")
+                        .get()
+                        .addOnSuccessListener(queryDocumentSnapshots -> {
+                            if (!queryDocumentSnapshots.isEmpty()) {
+                                songs.clear();
+                                for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                                    String id = document.getId().trim();
+                                    String duration = document.getString("duration").trim();
+                                    String image = document.getString("image").trim();
+                                    String link = document.getString("link").trim();
+                                    String title = document.getString("title").trim();
+                                    String lyric = document.getString("lyric");
+                                    int like = document.getLong("likes").intValue();
+                                    Timestamp release = document.getTimestamp("release");
+                                    String idAlbum = document.getString("idAlbum").trim();
+                                    String idSinger = document.getString("idSinger").trim();
+
+                                    Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum, idSinger);
+
+                                    songs.add(song);
+                                }
+                            } else {
+                                Log.d("No song found", "Empty Firestore collection");
+                            }
+                        })
+                        .addOnFailureListener(e -> Log.d("Error getting songs", e.getMessage()));
+                Intent intent = new Intent("sendListSongs");
+                intent.putExtra("sendListSongs", songs);
+                getContext().sendBroadcast(intent);
+            }
+        });
     }
 }

@@ -198,7 +198,7 @@ public class ProfileFragment extends Fragment {
             }
 
             if (value != null && value.exists()) {
-                String ava = value.getString("Avatar");
+                String ava = value.getString("Avatar").trim();
                 if (ava != null) {
                     Glide.with(getContext())
                             .load(ava)
@@ -213,14 +213,14 @@ public class ProfileFragment extends Fragment {
 
 
     private void getUser() {
-        DocumentReference documentReference = firebaseFirestore.collection("Users").document(firebaseUser.getUid());
+        DocumentReference documentReference = firebaseFirestore.collection("Users").document(firebaseUser.getUid().trim());
         documentReference.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot document = task.getResult();
-                String Username = document.getString("Username");
-                String Email = document.getString("Email");
-                String Address = document.getString("Address");
-                String Phone = document.getString("Phone");
+                String Username = document.getString("Username").trim();
+                String Email = document.getString("Email").trim();
+                String Address = document.getString("Address").trim();
+                String Phone = document.getString("Phone").trim();
                 edtUsername.setText(Username);
                 edtEmail.setText(Email);
                 edtAddress.setText(Address);

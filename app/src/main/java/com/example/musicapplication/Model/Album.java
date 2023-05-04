@@ -1,6 +1,11 @@
 package com.example.musicapplication.Model;
 
-public class Album {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import androidx.annotation.NonNull;
+
+public class Album implements Parcelable {
     String id;
     String image;
     String singer;
@@ -12,6 +17,25 @@ public class Album {
         this.singer = singer;
         this.title = title;
     }
+
+    protected Album(Parcel in) {
+        id = in.readString();
+        image = in.readString();
+        singer = in.readString();
+        title = in.readString();
+    }
+
+    public static final Creator<Album> CREATOR = new Creator<Album>() {
+        @Override
+        public Album createFromParcel(Parcel in) {
+            return new Album(in);
+        }
+
+        @Override
+        public Album[] newArray(int size) {
+            return new Album[size];
+        }
+    };
 
     public String getId() {
         return id;
@@ -43,5 +67,18 @@ public class Album {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel parcel, int i) {
+        parcel.writeString(id);
+        parcel.writeString(image);
+        parcel.writeString(singer);
+        parcel.writeString(title);
     }
 }

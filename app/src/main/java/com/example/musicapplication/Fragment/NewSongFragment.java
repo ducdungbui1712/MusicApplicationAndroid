@@ -47,7 +47,7 @@ public class NewSongFragment extends Fragment {
         playerView = getActivity().findViewById(R.id.playerView);
         songs = new ArrayList<>();
         getSongs();
-        newSongAdapter = new NewSongAdapter(getContext(), songs, playerView);
+        newSongAdapter = new NewSongAdapter(getContext(),null, songs, playerView);
         recyclerViewNewSongs.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
         recyclerViewNewSongs.setAdapter(newSongAdapter);
 
@@ -67,20 +67,18 @@ public class NewSongFragment extends Fragment {
             } else {
                 for (DocumentSnapshot document : documentSnapshots) {
                     // Lấy dữ liệu từ document
-                    String id = document.getId();
-                    String duration = document.getString("duration");
-                    String image = document.getString("image");
-                    String link = document.getString("link");
-                    String title = document.getString("title");
+                    String id = document.getId().trim();
+                    String duration = document.getString("duration").trim();
+                    String image = document.getString("image").trim();
+                    String link = document.getString("link").trim();
+                    String title = document.getString("title").trim();
                     String lyric = document.getString("lyric");
                     int like = document.getLong("likes").intValue();
                     Timestamp release = document.getTimestamp("release");
-                    String idGenre =document.getString("idGenre");
-                    String idAlbum = document.getString("idAlbum");
-                    String idSinger = document.getString("idSinger");
-                    String idTopic = document.getString("idTopic");
+                    String idAlbum = document.getString("idAlbum").trim();
+                    String idSinger = document.getString("idSinger").trim();
 
-                    Song song = new Song(id, duration, image, link, title, lyric, like, release, idGenre, idAlbum,idSinger, idTopic);
+                    Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum, idSinger);
                     songs.add(song);
                 }
                 newSongAdapter.notifyDataSetChanged();

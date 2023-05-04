@@ -3,6 +3,7 @@ package com.example.musicapplication.Adapter;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,9 +11,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.musicapplication.Fragment.Album.AlbumSongsFragment;
+import com.example.musicapplication.Fragment.Singer.SingerTabFragment;
 import com.example.musicapplication.Model.Album;
 import com.example.musicapplication.R;
 
@@ -38,17 +43,26 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder>{
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         final Album album = albums.get(position);
-        holder.txtAlbumTitle.setText(album.getTitle());
-        holder.txtSingerName.setText(album.getSinger());
+        holder.txtAlbumTitle.setText(album.getTitle().trim());
+        holder.txtSingerName.setText(album.getSinger().trim());
         Glide.with(context)
-                .load(album.getImage())
+                .load(album.getImage().trim())
                 .into(holder.imageViewAlbum);
 
-//        holder.itemView.setOnClickListener(v -> {
-//            Intent i = new Intent(context, danhsachbaihatAlbum.class);
-//            i.putExtra("idAlbum",dongPlaylist.get(position).getId());
-//            context.startActivity(i);
-//        });
+        holder.itemView.setOnClickListener(v -> {
+            Bundle bundle = new Bundle();
+            bundle.putParcelable("album", album);
+            AlbumSongsFragment albumSongsFragment = new AlbumSongsFragment();
+            albumSongsFragment.setArguments(bundle);
+
+            FragmentTransaction fragmentTransaction = ((AppCompatActivity)context)
+                    .getSupportFragmentManager()
+                    .beginTransaction();
+            fragmentTransaction.replace(R.id.fragmentLayout, albumSongsFragment);
+            fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
+        });
 
     }
 

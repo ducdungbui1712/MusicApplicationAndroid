@@ -4,11 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    tools:context=".Fragment.NewSongFragment"
     android:orientation="vertical">
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:context=".Fragment.NewSongFragment"
         android:layout_gravity="center"
         android:layout_marginHorizontal="20dp"
         android:layout_marginVertical="20dp"
@@ -24,6 +24,5 @@
         android:layout_height="match_parent"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:backgroundTint="#9C27B0"
         android:scrollbars="vertical" />
 </LinearLayout>

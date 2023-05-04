@@ -1,4 +1,4 @@
-package com.example.musicapplication.Fragment;
+package com.example.musicapplication.Fragment.Home;
 
 import android.os.Bundle;
 
@@ -13,34 +13,29 @@ import android.view.ViewGroup;
 
 import com.example.musicapplication.Adapter.AlbumAdapter;
 import com.example.musicapplication.Model.Album;
-import com.example.musicapplication.Model.Singer;
 import com.example.musicapplication.R;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class AlbumsFragment extends Fragment {
+public class HomeAlbumFragment extends Fragment {
     View view;
     RecyclerView listAlbum;
     AlbumAdapter adapter;
     ArrayList<Album> albums;
     FirebaseFirestore firebaseFirestore;
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        view = inflater.inflate(R.layout.fragment_albums, container, false);
+        view = inflater.inflate(R.layout.fragment_home_album, container, false);
         firebaseFirestore = FirebaseFirestore.getInstance();
         listAlbum = view.findViewById(R.id.listAlbum);
         albums = new ArrayList<>();
-        adapter = new AlbumAdapter(albums,getContext());
-        listAlbum.setLayoutManager(new GridLayoutManager(getContext(), 2));
-        listAlbum.setAdapter(adapter);
         getAlbum();
         return view;
     }
@@ -62,11 +57,18 @@ public class AlbumsFragment extends Fragment {
                     albums.add(album);
                 }
 
+                if(albums.size() >= 4) {
+                    Collections.shuffle(albums);
+                    List<Album> randomAlbums = albums.subList(0, 4);
+                    ArrayList<Album> randomAlbumsList = new ArrayList<>(randomAlbums);
+                    adapter = new AlbumAdapter(randomAlbumsList,getContext());
+                }else {
+                    adapter = new AlbumAdapter(albums,getContext());
+                }
+                listAlbum.setLayoutManager(new GridLayoutManager(getContext(), 2));
+                listAlbum.setAdapter(adapter);
                 adapter.notifyDataSetChanged();
-
             }
         }).addOnFailureListener(e -> Log.d("TAG","Error"));
     }
-
-
 }

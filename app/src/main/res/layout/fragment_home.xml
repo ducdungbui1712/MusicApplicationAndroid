@@ -1,15 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".Fragment.HomeFragment">
+    android:layout_height="match_parent">
 
-    <!-- TODO: Update blank fragment layout -->
-
-    <fragment
-        android:id="@+id/fragmentBanner"
-        android:name="com.example.musicapplication.Fragment.Home.HomeBannerFragment"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-</FrameLayout>
+        android:layout_height="match_parent"
+        tools:context=".Fragment.HomeFragment">
+        <!-- Fragment banner -->
+        <fragment
+            android:id="@+id/fragmentBanner"
+            android:name="com.example.musicapplication.Fragment.Home.HomeBannerFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <!-- Fragment album -->
+        <fragment
+            android:id="@+id/fragmentAlbum"
+            android:name="com.example.musicapplication.Fragment.Home.HomeAlbumFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/fragmentBanner"
+            android:layout_marginHorizontal="10dp"/>
+
+        <!-- Fragment ranking -->
+        <fragment
+            android:id="@+id/fragmentRanking"
+            android:name="com.example.musicapplication.Fragment.Home.HomeRankingFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/fragmentAlbum"
+            android:layout_marginHorizontal="10dp"/>
+    </RelativeLayout>
+</ScrollView>

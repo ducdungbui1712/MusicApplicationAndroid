@@ -16,15 +16,12 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.TranslateAnimation;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -36,23 +33,21 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.musicapplication.Adapter.NewSongAdapter;
 import com.example.musicapplication.Fragment.AlbumsFragment;
+import com.example.musicapplication.Fragment.HomeFragment;
 import com.example.musicapplication.Fragment.SingerFragment;
-import com.example.musicapplication.Fragment.Home.HomeTabFragment;
 import com.example.musicapplication.Fragment.NewSongFragment;
 import com.example.musicapplication.Fragment.PersonalMusicFragment;
 import com.example.musicapplication.Fragment.ProfileFragment;
-import com.example.musicapplication.Fragment.TopicFragment;
 import com.example.musicapplication.Model.Song;
 import com.example.musicapplication.R;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -78,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     //player_view
     RelativeLayout playerView;
     CircleImageView songImage;
-    ImageView backArrow;
+    ImageView backArrow, like;
     TextView songTitle, albumTitle, artistName, timeDuration, timeLeft;
     ImageButton shuffle, previous, play, next, repeat;
     SeekBar seekBar;
@@ -100,56 +95,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+
             if (intent.getAction().equals("sendSong")) {
                 if(intent != null){
                     song = intent.getParcelableExtra("song");
+                    ArrayList<Song> ListSongs = intent.getParcelableArrayListExtra("songs");
                     loadData(song);
+                    songs.clear();
+                    originalSongs.clear();
+                    songs.addAll(ListSongs);
+                    originalSongs.addAll(songs);
                 }
-            }
-
-            if (intent.getAction().equals("sendListSongs")) {
+            }else if (intent.getAction().equals("personalSong")) {
                 if(intent != null){
-//                    songs.clear();
-//                    originalSongs.clear();
-//                    ArrayList<Song> ListSongs = intent.getParcelableArrayListExtra("sendListSongs");
-//                    songs.addAll(ListSongs);
-//                    originalSongs.addAll(songs);
+                    song = intent.getParcelableExtra("song");
+                    ArrayList<Song> ListSongs = intent.getParcelableArrayListExtra("songs");
+                    loadData(song);
+                    songs.clear();
+                    originalSongs.clear();
+                    songs.addAll(ListSongs);
+                    originalSongs.addAll(songs);
                 }
-            }else {
-                songs.clear();
-                originalSongs.clear();
-                CollectionReference productRefs = firebaseFirestore.collection("Songs");
-                productRefs.orderBy("likes", Query.Direction.DESCENDING)
-                        .orderBy("release", Query.Direction.DESCENDING)
-                        .get()
-                        .addOnSuccessListener(documentSnapshots -> {
-                            if (documentSnapshots.isEmpty()) {
-                                Log.d("TAG", "onSuccess: LIST EMPTY");
-                            } else {
-                                for (DocumentSnapshot document : documentSnapshots) {
-                                    // Lấy dữ liệu từ document
-                                    String id = document.getId();
-                                    String duration = document.getString("duration");
-                                    String image = document.getString("image");
-                                    String link = document.getString("link");
-                                    String title = document.getString("title");
-                                    String lyric = document.getString("lyric");
-                                    int like = document.getLong("likes").intValue();
-                                    Timestamp release = document.getTimestamp("release");
-                                    String idGenre =document.getString("idGenre");
-                                    String idAlbum = document.getString("idAlbum");
-                                    String idSinger = document.getString("idSinger");
-                                    String idTopic = document.getString("idTopic");
-
-                                    Song song = new Song(id, duration, image, link, title, lyric, like, release, idGenre, idAlbum,idSinger, idTopic);
-                                    songs.add(song);
-                                }
-                            }
-                            originalSongs.addAll(songs);
-                        }).addOnFailureListener(e -> Log.d("TAG","Error"));
             }
         }
     };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,12 +141,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new HomeTabFragment()).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new HomeFragment()).commit();
             navigationView.setCheckedItem(R.id.navHome);
         }
         // Register the broadcast receiver
         IntentFilter filter = new IntentFilter("sendSong");
+        IntentFilter filter1 = new IntentFilter("personalSong");
         registerReceiver(broadcastReceiver, filter);
+        registerReceiver(broadcastReceiver, filter1);
         playerViewControl();
     }
 
@@ -196,21 +168,35 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public void loadData(Song song) {
         //playerView
-        songTitle.setText(song.getTitle());
+        songTitle.setText(song.getTitle().trim());
         getAlbumAndArtistTitle(song);
-        timeDuration.setText(song.getDuration());
+        timeDuration.setText(song.getDuration().trim());
         Glide.with(getApplicationContext())
-                .load(song.getImage())
+                .load(song.getImage().trim())
                 .into(songImage);
 
         setAnimationSongImage(songImage);
 
         //miniPlayer
-        songTitleMiniPlayer.setText(song.getTitle());
+        songTitleMiniPlayer.setText(song.getTitle().trim());
         Glide.with(getApplicationContext())
-                .load(song.getImage())
+                .load(song.getImage().trim())
                 .into(songImageMiniPlayer);
         setAnimationSongImage(songImageMiniPlayer);
+
+        // Set image resource for like button
+        firebaseFirestore.collection("Users").document(firebaseUser.getUid().trim())
+                .get().addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        ArrayList<String> likedSongIds = (ArrayList<String>) documentSnapshot.get("songLiked");
+                        if (likedSongIds != null && likedSongIds.contains(song.getId().trim())) {
+                            like.setImageResource(R.mipmap.heart_on);
+                        }else {
+                            like.setImageResource(R.mipmap.heart);
+                        }
+                    }
+                });
+
         seekBar.setMax(NewSongAdapter.mediaPlayer.getDuration());
         seekBarMiniPlayer.setMax(NewSongAdapter.mediaPlayer.getDuration());
         updateSeekBar();
@@ -250,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (song != null) {
             try {
                 NewSongAdapter.mediaPlayer.reset();
-                NewSongAdapter.mediaPlayer.setDataSource(song.getLink());
+                NewSongAdapter.mediaPlayer.setDataSource(song.getLink().trim());
                 NewSongAdapter.mediaPlayer.prepare();
                 NewSongAdapter.mediaPlayer.start();
             } catch (IOException e) {
@@ -313,6 +299,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         playerView = findViewById(R.id.playerView);
         songImage = findViewById(R.id.songImage);
         backArrow = findViewById(R.id.backArrow);
+        like = findViewById(R.id.like);
         songTitle = findViewById(R.id.songTitle);
         albumTitle = findViewById(R.id.albumTitle);
         artistName = findViewById(R.id.artistName);
@@ -341,7 +328,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setSupportActionBar(toolbar);
         setTitle("");
         toolbarLogo.setOnClickListener(view -> {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new HomeTabFragment()).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new HomeFragment()).commit();
             navigationView.setCheckedItem(R.id.navHome);
         });
     }
@@ -357,6 +344,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void playerViewControl() {
         backArrow.setOnClickListener(view -> exitPlayerView());
         miniPlayer.setOnClickListener(view -> showPlayerView());
+        like.setOnClickListener(view -> {
+            firebaseUser = firebaseAuth.getCurrentUser();
+            String userID = firebaseUser.getUid().trim();
+            DocumentReference docRef = firebaseFirestore.collection("Users").document(userID);
+            docRef.update("songLiked", FieldValue.arrayUnion(song.getId().trim()))
+                    .addOnSuccessListener(aVoid -> {
+                        Log.d("TAG", "onSuccess: Song added to liked list");
+                        like.setImageResource(R.mipmap.heart_on);
+                    })
+                    .addOnFailureListener(e -> Log.w("TAG", "Error adding song to liked list", e));
+        });
         miniPlayer.setOnTouchListener(new View.OnTouchListener() {
             private float startY;
             private int dragThreshold = 10;
@@ -526,7 +524,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else {
             Song songToFind = null;
             for (Song s : originalSongs) {
-                if (s.getId().equals(currentSong.getId())) {
+                if (s.getId().trim().equals(currentSong.getId().trim())) {
                     songToFind = s;
                     break;
                 }
@@ -546,7 +544,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else {
             Song songToFind = null;
             for (Song s : originalSongs) {
-                if (s.getId().equals(currentSong.getId())) {
+                if (s.getId().trim().equals(currentSong.getId().trim())) {
                     songToFind = s;
                     break;
                 }
@@ -554,6 +552,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             int currentIndex = originalSongs.indexOf(songToFind);
             int nextIndex = (currentIndex + 1) % originalSongs.size();
+//            int nextIndex = ((currentIndex + 1) % originalSongs.size())  == 0 ? 0 : (currentIndex + 1) % originalSongs.size();
             nextSong = originalSongs.get(nextIndex);
         }
         return nextSong;
@@ -582,7 +581,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
     private void getUser() {
-        DocumentReference documentReference = firebaseFirestore.collection("Users").document(firebaseUser.getUid());
+        DocumentReference documentReference = firebaseFirestore.collection("Users").document(firebaseUser.getUid().trim());
         documentReference.addSnapshotListener((documentSnapshot, e) -> {
             if (e != null) {
                 Log.d("TAG", "Listen failed.", e);
@@ -590,9 +589,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
 
             if (documentSnapshot != null && documentSnapshot.exists()) {
-                String Username = documentSnapshot.getString("Username");
-                String Ava = documentSnapshot.getString("Avatar");
-                String Email = documentSnapshot.getString("Email");
+                String Username = documentSnapshot.getString("Username").trim();
+                String Ava = documentSnapshot.getString("Avatar").trim();
+                String Email = documentSnapshot.getString("Email").trim();
                 Glide.with(getApplicationContext())
                         .load(Ava).circleCrop()
                         .into(imageViewUserAva);
@@ -615,10 +614,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.navHome:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new HomeTabFragment()).commit();
-                break;
-            case R.id.navTopic:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new TopicFragment()).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new HomeFragment()).commit();
                 break;
             case R.id.navNewSong:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new NewSongFragment()).commit();
