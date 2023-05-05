@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.musicapplication.Activity.MainActivity;
 import com.example.musicapplication.Model.Song;
 import com.example.musicapplication.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -33,7 +34,7 @@ public class PersonalMusicAdapter extends RecyclerView.Adapter<PersonalMusicAdap
     Context context;
     ArrayList<Song> songs;
 
-    static public MediaPlayer mediaPlayer;
+    static public MediaPlayer personalSongPlayer;
     RelativeLayout playerView;
 
 
@@ -42,6 +43,7 @@ public class PersonalMusicAdapter extends RecyclerView.Adapter<PersonalMusicAdap
         this.songs = songs;
         this.playerView = playerView;
     }
+
 
     @NonNull
     @Override
@@ -53,7 +55,7 @@ public class PersonalMusicAdapter extends RecyclerView.Adapter<PersonalMusicAdap
 
     @Override
     public void onBindViewHolder(@NonNull PersonalMusicAdapter.ViewHolder holder, int position) {
-        final Song song = songs.get(position);;
+        final Song song = songs.get(position);
 
         holder.rankSong.setText(String.valueOf(position + 1));
         holder.songName.setText(song.getTitle().trim().trim());
@@ -118,23 +120,32 @@ public class PersonalMusicAdapter extends RecyclerView.Adapter<PersonalMusicAdap
             Intent intent = new Intent("personalSong");
             intent.putExtra("song", song);
             intent.putExtra("songs", songs);
+            intent.putExtra("isPersonalAdapter", true);
             context.sendBroadcast(intent);
         });
 
     }
 
     public void playSong(Song song) {
-        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
-            mediaPlayer.stop();
-            mediaPlayer.reset();
+        if (personalSongPlayer != null && personalSongPlayer.isPlaying()) {
+            personalSongPlayer.stop();
+            personalSongPlayer.release();
+            personalSongPlayer = null;
+        }
+
+
+        if (NewSongAdapter.newSongPlayer != null && NewSongAdapter.newSongPlayer.isPlaying()) {
+            NewSongAdapter.newSongPlayer.stop();
+            NewSongAdapter.newSongPlayer.release();
+            NewSongAdapter.newSongPlayer = null;
         }
 
         // Start playing the new song
-        mediaPlayer = new MediaPlayer();
+        personalSongPlayer = new MediaPlayer();
         try {
-            mediaPlayer.setDataSource(song.getLink().trim());
-            mediaPlayer.prepare();
-            mediaPlayer.start();
+            personalSongPlayer.setDataSource(song.getLink().trim());
+            personalSongPlayer.prepare();
+            personalSongPlayer.start();
             Animation slide_up = AnimationUtils.loadAnimation(context,
                     R.anim.slide_up);
             playerView.setVisibility(View.VISIBLE);

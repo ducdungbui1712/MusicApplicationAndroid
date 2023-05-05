@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.musicapplication.Activity.MainActivity;
 import com.example.musicapplication.Model.Song;
 import com.example.musicapplication.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -34,7 +35,7 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
     ArrayList<Song> rankSongs;
     ArrayList<Song> songs;
 
-    static public MediaPlayer mediaPlayer;
+    static public MediaPlayer newSongPlayer;
     RelativeLayout playerView;
 
 
@@ -137,22 +138,30 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
             Intent intent = new Intent("sendSong");
             intent.putExtra("song", song);
             intent.putExtra("songs", songs);
+            intent.putExtra("isPersonalAdapter", false);
             context.sendBroadcast(intent);
         });
     }
 
     public void playSong(Song song) {
-        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
-            mediaPlayer.stop();
-            mediaPlayer.reset();
+        if (newSongPlayer != null && newSongPlayer.isPlaying()) {
+            newSongPlayer.stop();
+            newSongPlayer.release();
+            newSongPlayer = null;
+        }
+
+        if (PersonalMusicAdapter.personalSongPlayer != null && PersonalMusicAdapter.personalSongPlayer.isPlaying()) {
+            PersonalMusicAdapter.personalSongPlayer.stop();
+            PersonalMusicAdapter.personalSongPlayer.release();
+            PersonalMusicAdapter.personalSongPlayer = null;
         }
 
         // Start playing the new song
-        mediaPlayer = new MediaPlayer();
+        newSongPlayer = new MediaPlayer();
         try {
-            mediaPlayer.setDataSource(song.getLink().trim());
-            mediaPlayer.prepare();
-            mediaPlayer.start();
+            newSongPlayer.setDataSource(song.getLink().trim());
+            newSongPlayer.prepare();
+            newSongPlayer.start();
             Animation slide_up = AnimationUtils.loadAnimation(context,
                     R.anim.slide_up);
             playerView.setVisibility(View.VISIBLE);

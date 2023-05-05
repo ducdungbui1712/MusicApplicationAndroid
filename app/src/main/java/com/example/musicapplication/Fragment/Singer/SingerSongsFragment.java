@@ -150,17 +150,17 @@ public class SingerSongsFragment extends Fragment {
             Intent intent = new Intent("sendListSongs");
             intent.putExtra("sendListSongs", songs);
             getContext().sendBroadcast(intent);
-            if (NewSongAdapter.mediaPlayer != null && NewSongAdapter.mediaPlayer.isPlaying()) {
-                NewSongAdapter.mediaPlayer.stop();
-                NewSongAdapter.mediaPlayer.reset();
+            if (NewSongAdapter.newSongPlayer != null && NewSongAdapter.newSongPlayer.isPlaying()) {
+                NewSongAdapter.newSongPlayer.stop();
+                NewSongAdapter.newSongPlayer.reset();
             }
 
             // Start playing the new song
-            NewSongAdapter.mediaPlayer = new MediaPlayer();
+            NewSongAdapter.newSongPlayer = new MediaPlayer();
             try {
-                NewSongAdapter.mediaPlayer.setDataSource(songs.get(0).getLink().trim());
-                NewSongAdapter.mediaPlayer.prepare();
-                NewSongAdapter.mediaPlayer.start();
+                NewSongAdapter.newSongPlayer.setDataSource(songs.get(0).getLink().trim());
+                NewSongAdapter.newSongPlayer.prepare();
+                NewSongAdapter.newSongPlayer.start();
                 Animation slide_up = AnimationUtils.loadAnimation(getContext(),
                         R.anim.slide_up);
                 playerView.setVisibility(View.VISIBLE);

@@ -13,6 +13,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -32,6 +33,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.musicapplication.Adapter.NewSongAdapter;
+import com.example.musicapplication.Adapter.PersonalMusicAdapter;
 import com.example.musicapplication.Fragment.AlbumsFragment;
 import com.example.musicapplication.Fragment.HomeFragment;
 import com.example.musicapplication.Fragment.SingerFragment;
@@ -48,6 +50,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ServerTimestamp;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -69,6 +72,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     CircleImageView imageViewUserAva;
     TextView txtUserName, txtUserMail;
     ObjectAnimator objectAnimator;
+    MediaPlayer mediaPlayer = new MediaPlayer();
+    public static boolean isPersonalAdapter = false;
 
     //player_view
     RelativeLayout playerView;
@@ -92,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     boolean isRepeat = false;
     boolean isShuffle = false;
     private int currentSongIndex = 0;
-    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver sendSongReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
 
@@ -100,16 +105,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if(intent != null){
                     song = intent.getParcelableExtra("song");
                     ArrayList<Song> ListSongs = intent.getParcelableArrayListExtra("songs");
+                    isPersonalAdapter = intent.getBooleanExtra("isPersonalAdapter", false);
+                    mediaPlayer = isPersonalAdapter ? PersonalMusicAdapter.personalSongPlayer : NewSongAdapter.newSongPlayer;
                     loadData(song);
                     songs.clear();
                     originalSongs.clear();
                     songs.addAll(ListSongs);
                     originalSongs.addAll(songs);
                 }
-            }else if (intent.getAction().equals("personalSong")) {
+            }
+        }
+    };
+
+    private BroadcastReceiver personalSongReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals("personalSong")) {
                 if(intent != null){
                     song = intent.getParcelableExtra("song");
                     ArrayList<Song> ListSongs = intent.getParcelableArrayListExtra("songs");
+                    isPersonalAdapter = intent.getBooleanExtra("isPersonalAdapter", false);
+                    mediaPlayer = isPersonalAdapter ? PersonalMusicAdapter.personalSongPlayer : NewSongAdapter.newSongPlayer;
                     loadData(song);
                     songs.clear();
                     originalSongs.clear();
@@ -145,10 +161,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             navigationView.setCheckedItem(R.id.navHome);
         }
         // Register the broadcast receiver
-        IntentFilter filter = new IntentFilter("sendSong");
-        IntentFilter filter1 = new IntentFilter("personalSong");
-        registerReceiver(broadcastReceiver, filter);
-        registerReceiver(broadcastReceiver, filter1);
+        IntentFilter sendSongFilter = new IntentFilter();
+        sendSongFilter.addAction("sendSong");
+        IntentFilter personalSongFilter = new IntentFilter();
+        personalSongFilter.addAction("personalSong");
+        registerReceiver(sendSongReceiver, sendSongFilter);
+        registerReceiver(personalSongReceiver, personalSongFilter);
         playerViewControl();
     }
 
@@ -156,17 +174,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onDestroy() {
         super.onDestroy();
         // Unregister the broadcast receiver to avoid memory leaks
-        unregisterReceiver(broadcastReceiver);
+        unregisterReceiver(sendSongReceiver);
+        unregisterReceiver(personalSongReceiver);
 
         //release the player
-        if(NewSongAdapter.mediaPlayer.isPlaying()){
-            NewSongAdapter.mediaPlayer.stop();
+        if(mediaPlayer.isPlaying()){
+            mediaPlayer.stop();
         }
-        NewSongAdapter.mediaPlayer.release();
+        mediaPlayer.release();
 
     }
 
     public void loadData(Song song) {
+
+        Log.d("songID", song.getId());
+        Log.d("songs.size()", String.valueOf(songs.size()));
+        Log.d("isPersonalAdapter", String.valueOf(isPersonalAdapter));
+        Log.d("isPersonalAdapter", String.valueOf(mediaPlayer));
         //playerView
         songTitle.setText(song.getTitle().trim());
         getAlbumAndArtistTitle(song);
@@ -197,19 +221,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                 });
 
-        seekBar.setMax(NewSongAdapter.mediaPlayer.getDuration());
-        seekBarMiniPlayer.setMax(NewSongAdapter.mediaPlayer.getDuration());
+        seekBar.setMax(mediaPlayer.getDuration());
+        seekBarMiniPlayer.setMax(mediaPlayer.getDuration());
         updateSeekBar();
     }
 
     private void updateSeekBar() {
         handler = new Handler();
         handler.postDelayed(() -> {
-            if (NewSongAdapter.mediaPlayer != null) { // Check if mediaPlayer is not null
-                int currentPosition = NewSongAdapter.mediaPlayer.getCurrentPosition();
+            if (mediaPlayer != null) { // Check if mediaPlayer is not null
+                int currentPosition = mediaPlayer.getCurrentPosition();
                 seekBar.setProgress(currentPosition);
                 seekBarMiniPlayer.setProgress(currentPosition);
-                int timeLeftInMillis = NewSongAdapter.mediaPlayer.getDuration() - currentPosition;
+                int timeLeftInMillis = mediaPlayer.getDuration() - currentPosition;
                 timeLeft.setText(String.format(Locale.getDefault(), "%02d:%02d",
                         TimeUnit.MILLISECONDS.toMinutes(timeLeftInMillis),
                         TimeUnit.MILLISECONDS.toSeconds(timeLeftInMillis) -
@@ -220,8 +244,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         onFinish();
     }
     public void onFinish() {
-        if (NewSongAdapter.mediaPlayer != null) { // Check if mediaPlayer is not null
-            NewSongAdapter.mediaPlayer.setOnCompletionListener(mp -> {
+        if (mediaPlayer != null) { // Check if mediaPlayer is not null
+            mediaPlayer.setOnCompletionListener(mp -> {
                 play.setImageResource(R.mipmap.play);
                 objectAnimator.end();
                 song = getNextSong(song);
@@ -235,10 +259,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void playSong(Song song) {
         if (song != null) {
             try {
-                NewSongAdapter.mediaPlayer.reset();
-                NewSongAdapter.mediaPlayer.setDataSource(song.getLink().trim());
-                NewSongAdapter.mediaPlayer.prepare();
-                NewSongAdapter.mediaPlayer.start();
+                mediaPlayer.reset();
+                mediaPlayer.setDataSource(song.getLink().trim());
+                mediaPlayer.prepare();
+                mediaPlayer.start();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -253,7 +277,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         objectAnimator.setRepeatCount(ValueAnimator.INFINITE);
         objectAnimator.setRepeatMode(ValueAnimator.RESTART);
 
-        if (NewSongAdapter.mediaPlayer.isPlaying()) {
+        if (mediaPlayer.isPlaying()) {
             play.setImageResource(R.mipmap.pause);
             playMiniPlayer.setImageResource(R.mipmap.pause);
             objectAnimator.start();
@@ -383,10 +407,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             // User dragged down more than half of the Mini player height, so close it
                             miniPlayer.animate().translationY(miniPlayerHeight).start();
                             miniPlayer.setVisibility(View.GONE);
-                            if (NewSongAdapter.mediaPlayer != null) {
-                                NewSongAdapter.mediaPlayer.stop();
-                                NewSongAdapter.mediaPlayer.release();
-                                NewSongAdapter.mediaPlayer = null;
+                            if (mediaPlayer != null) {
+                                mediaPlayer.stop();
+                                mediaPlayer.release();
+                                mediaPlayer = null; // Set mediaPlayer to null after releasing it
+                                if(isPersonalAdapter){
+                                    PersonalMusicAdapter.personalSongPlayer = null;
+                                }else {
+                                    NewSongAdapter.newSongPlayer = null;
+                                }
                             }
                         } else {
                             // User did not drag down enough, so restore the Mini player to its original position
@@ -427,21 +456,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
         play.setOnClickListener(view1 -> {
-            if (NewSongAdapter.mediaPlayer.isPlaying()) {
-                NewSongAdapter.mediaPlayer.pause();
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.pause();
                 setAnimationSongImage(songImage); // dừng animation
             } else {
-                NewSongAdapter.mediaPlayer.start();
+                mediaPlayer.start();
                 setAnimationSongImage(songImage); // bắt đầu animation
             }
         });
 
         playMiniPlayer.setOnClickListener(view1 -> {
-            if (NewSongAdapter.mediaPlayer.isPlaying()) {
-                NewSongAdapter.mediaPlayer.pause();
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.pause();
                 setAnimationSongImage(songImage); // dừng animation
             } else {
-                NewSongAdapter.mediaPlayer.start();
+                mediaPlayer.start();
                 setAnimationSongImage(songImage); // bắt đầu animation
             }
         });
@@ -461,10 +490,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         repeat.setOnClickListener(view1 -> {
             isRepeat = !isRepeat;
             if (isRepeat) {
-                NewSongAdapter.mediaPlayer.setLooping(true);
+                mediaPlayer.setLooping(true);
                 repeat.setImageResource(R.mipmap.repeat_on);
             } else {
-                NewSongAdapter.mediaPlayer.setLooping(false);
+                mediaPlayer.setLooping(false);
                 repeat.setImageResource(R.mipmap.repeat);
             }
         });
@@ -473,20 +502,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
-                    NewSongAdapter.mediaPlayer.seekTo(progress);
+                    mediaPlayer.seekTo(progress);
                 }
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                NewSongAdapter.mediaPlayer.pause();
+                mediaPlayer.pause();
                 play.setImageResource(R.mipmap.play);
                 objectAnimator.pause();
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                NewSongAdapter.mediaPlayer.start();
+                mediaPlayer.start();
                 play.setImageResource(R.mipmap.pause);
                 objectAnimator.resume();
             }
@@ -496,20 +525,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
-                    NewSongAdapter.mediaPlayer.seekTo(progress);
+                    mediaPlayer.seekTo(progress);
                 }
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                NewSongAdapter.mediaPlayer.pause();
+                mediaPlayer.pause();
                 playMiniPlayer.setImageResource(R.mipmap.play);
                 objectAnimator.pause();
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                NewSongAdapter.mediaPlayer.start();
+                mediaPlayer.start();
                 playMiniPlayer.setImageResource(R.mipmap.pause);
                 objectAnimator.resume();
             }

@@ -47,7 +47,6 @@ public class PersonalMusicFragment extends Fragment {
     Song song;
     ArrayList<String> trimmedSongIds;
     PersonalMusicAdapter personalMusicAdapter;
-
     RelativeLayout playerView;
     Button btnPlayAll;
 
@@ -65,7 +64,7 @@ public class PersonalMusicFragment extends Fragment {
         songs = new ArrayList<>();
         trimmedSongIds = new ArrayList<>();
         getSongLiked();
-
+        eventClick();
         personalMusicAdapter = new PersonalMusicAdapter(getContext(),personalSongs,playerView);
         recyclerViewPersonalSong.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
         recyclerViewPersonalSong.setAdapter(personalMusicAdapter);
@@ -113,7 +112,6 @@ public class PersonalMusicFragment extends Fragment {
                             })
                             .addOnFailureListener(e -> Log.d("Error getting song for singer with id: "+ firebaseUser.getUid().trim(), e.getMessage()));
                 }
-                eventClick();
             }
             else {Log.d("Error getting songLiked: ", userId);}
         }).addOnFailureListener(e -> Log.d("Error getting user: ", userId));
@@ -121,46 +119,22 @@ public class PersonalMusicFragment extends Fragment {
 
     private void eventClick() {
         btnPlayAll.setOnClickListener(v -> {
-            if (NewSongAdapter.mediaPlayer != null && NewSongAdapter.mediaPlayer.isPlaying()) {
-                NewSongAdapter.mediaPlayer.stop();
-                NewSongAdapter.mediaPlayer.reset();
-            }
-
-            // Start playing the new song
-            NewSongAdapter.mediaPlayer = new MediaPlayer();
-            try {
-                NewSongAdapter.mediaPlayer.setDataSource(personalSongs.get(0).getLink().trim());
-                NewSongAdapter.mediaPlayer.prepare();
-                NewSongAdapter.mediaPlayer.start();
-                Animation slide_up = AnimationUtils.loadAnimation(getContext(),
-                        R.anim.slide_up);
-                playerView.setVisibility(View.VISIBLE);
-                playerView.startAnimation(slide_up);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            // Lấy ra MainActivity hiện tại
-            MainActivity mainActivity = (MainActivity) getActivity();
-            // Gọi phương thức loadData() trong MainActivity
-            if (mainActivity != null) {
-                mainActivity.loadData(personalSongs.get(0));
-            }
-
-            Log.d( "personalSongs.size(): ", String.valueOf(personalSongs.size()));
-
             if (personalSongs.size() > 1){
-                Intent intent = new Intent("sendListSongs");
-                intent.putExtra("sendListSongs", personalSongs);
+                playSong(personalSongs.get(0));
+                Intent intent = new Intent("personalSong");
+                intent.putExtra("song", personalSongs.get(0));
+                intent.putExtra("songs", personalSongs);
+                intent.putExtra("isPersonalAdapter", true);
                 getContext().sendBroadcast(intent);
 
+                Log.d("IF 1", "IF 1");
             }else {
                 // Query Firestore for all songs
-                songs.clear();
+                Log.d("IF 2", "IF 2");
                 firebaseFirestore.collection("Songs")
                         .get()
                         .addOnSuccessListener(queryDocumentSnapshots -> {
                             if (!queryDocumentSnapshots.isEmpty()) {
-                                songs.clear();
                                 for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                                     String id = document.getId().trim();
                                     String duration = document.getString("duration").trim();
@@ -177,15 +151,58 @@ public class PersonalMusicFragment extends Fragment {
 
                                     songs.add(song);
                                 }
+                                Log.d("songs.size()", String.valueOf(songs.size()));
+                                playSong(personalSongs.get(0));
+                                Intent intent = new Intent("personalSong");
+                                intent.putExtra("song", personalSongs.get(0));
+                                intent.putExtra("songs", songs);
+                                intent.putExtra("isPersonalAdapter", true);
+                                getContext().sendBroadcast(intent);
                             } else {
                                 Log.d("No song found", "Empty Firestore collection");
                             }
                         })
                         .addOnFailureListener(e -> Log.d("Error getting songs", e.getMessage()));
-                Intent intent = new Intent("sendListSongs");
-                intent.putExtra("sendListSongs", songs);
-                getContext().sendBroadcast(intent);
             }
         });
+    }
+
+    private void playSong(Song firstSong) {
+        Log.d( "personalSongs.size(): ", String.valueOf(personalSongs.size()));
+        Log.d( "songs.size(): ", String.valueOf(songs.size()));
+
+        if (PersonalMusicAdapter.personalSongPlayer != null && PersonalMusicAdapter.personalSongPlayer.isPlaying()) {
+            PersonalMusicAdapter.personalSongPlayer.stop();
+            PersonalMusicAdapter.personalSongPlayer.release();
+            PersonalMusicAdapter.personalSongPlayer = null;
+        }
+
+        if (NewSongAdapter.newSongPlayer != null && NewSongAdapter.newSongPlayer.isPlaying()) {
+            NewSongAdapter.newSongPlayer.stop();
+            NewSongAdapter.newSongPlayer.release();
+            NewSongAdapter.newSongPlayer = null;
+        }
+
+        // Start playing the new song
+        PersonalMusicAdapter.personalSongPlayer = new MediaPlayer();
+        try {
+            PersonalMusicAdapter.personalSongPlayer.setDataSource(firstSong.getLink().trim());
+            PersonalMusicAdapter.personalSongPlayer.prepare();
+            PersonalMusicAdapter.personalSongPlayer.start();
+            Animation slide_up = AnimationUtils.loadAnimation(getContext(),
+                    R.anim.slide_up);
+            playerView.setVisibility(View.VISIBLE);
+            playerView.startAnimation(slide_up);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // Lấy ra MainActivity hiện tại
+        MainActivity mainActivity = (MainActivity) getActivity();
+        // Gọi phương thức loadData() trong MainActivity
+        if (mainActivity != null) {
+            mainActivity.loadData(firstSong);
+        }
+
+
     }
 }
