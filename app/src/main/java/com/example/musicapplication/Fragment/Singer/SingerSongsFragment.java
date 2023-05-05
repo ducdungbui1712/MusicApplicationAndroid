@@ -129,7 +129,7 @@ public class SingerSongsFragment extends Fragment {
                             String image = document.getString("image").trim();
                             String link = document.getString("link").trim();
                             String title = document.getString("title").trim();
-                            String lyric = document.getString("lyric").trim();
+                            String lyric = document.getString("lyric");
                             int like = document.getLong("likes").intValue();
                             Timestamp release = document.getTimestamp("release");
                             String idAlbum = document.getString("idAlbum").trim();

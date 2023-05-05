@@ -3,16 +3,23 @@ package com.example.musicapplication.Activity;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,11 +28,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewOverlay;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -42,6 +52,8 @@ import com.example.musicapplication.Fragment.PersonalMusicFragment;
 import com.example.musicapplication.Fragment.ProfileFragment;
 import com.example.musicapplication.Model.Song;
 import com.example.musicapplication.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -50,6 +62,8 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.ServerTimestamp;
 
 import java.io.IOException;
@@ -74,6 +88,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     ObjectAnimator objectAnimator;
     MediaPlayer mediaPlayer = new MediaPlayer();
     public static boolean isPersonalAdapter = false;
+    RecyclerView searchBox;
+    NewSongAdapter newSongAdapter;
+    FrameLayout frameLayout;
 
     //player_view
     RelativeLayout playerView;
@@ -313,10 +330,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         firebaseAuth= FirebaseAuth.getInstance();
         firebaseFirestore = FirebaseFirestore.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
+        frameLayout = findViewById(R.id.fragmentLayout);
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
         toolbar = findViewById(R.id.toolbar);
         toolbarLogo = findViewById(R.id.toolbarLogo);
+
+
+
 
 
         //player_view
@@ -636,6 +657,53 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.nav_menu_search, menu);
         MenuItem searchItem = menu.findItem(R.id.ic_search);
+        SearchView searchView = (SearchView) searchItem.getActionView();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // Xử lý tìm kiếm ở đây
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                // Xử lý khi người dùng nhập từ khóa tìm kiếm vào đây
+                if (newText.length() >= 3) {
+
+                    firebaseFirestore.collection("Songs")
+                            .whereGreaterThanOrEqualTo("title", newText)
+                            .whereLessThanOrEqualTo("title",newText + "\uf8ff")
+                            .get().addOnCompleteListener(task -> {
+                                if (task.isSuccessful()) {
+                                    ArrayList<Song> songs = new ArrayList<>();
+                                    for (DocumentSnapshot document : task.getResult()) {
+                                        String id = document.getId().trim();
+                                        String duration = document.getString("duration").trim();
+                                        String image = document.getString("image").trim();
+                                        String link = document.getString("link").trim();
+                                        String title = document.getString("title").trim();
+                                        String lyric = document.getString("lyric");
+                                        int like = document.getLong("likes").intValue();
+                                        Timestamp release = document.getTimestamp("release");
+                                        String idAlbum = document.getString("idAlbum").trim();
+                                        String idSinger = document.getString("idSinger").trim();
+
+                                        Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum,idSinger);
+                                        songs.add(song);
+
+                                    }
+                                    Log.d( "onQueryTextChange: ", String.valueOf(songs));
+                                    newSongAdapter = new NewSongAdapter(getApplicationContext(),null,songs,playerView);
+                                    searchBox.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+                                    searchBox.setAdapter(newSongAdapter);
+                                } else {
+                                    Log.d( "Error getting documents: ", "Error");
+                                }
+                            });
+                }
+                return false;
+            }
+        });
         return true;
     }
 

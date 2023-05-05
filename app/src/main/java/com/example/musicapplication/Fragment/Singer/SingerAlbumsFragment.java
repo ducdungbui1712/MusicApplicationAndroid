@@ -83,7 +83,7 @@ public class SingerAlbumsFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recyclerView);
         firebaseFirestore = FirebaseFirestore.getInstance();
         albums = new ArrayList<>();
-        adapter = new AlbumAdapter(albums,getContext());
+        adapter = new AlbumAdapter(albums,singer,getContext());
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
         recyclerView.setAdapter(adapter);
     }

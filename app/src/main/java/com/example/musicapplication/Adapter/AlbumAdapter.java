@@ -19,6 +19,7 @@ import com.bumptech.glide.Glide;
 import com.example.musicapplication.Fragment.Album.AlbumSongsFragment;
 import com.example.musicapplication.Fragment.Singer.SingerTabFragment;
 import com.example.musicapplication.Model.Album;
+import com.example.musicapplication.Model.Singer;
 import com.example.musicapplication.R;
 
 import java.util.ArrayList;
@@ -27,9 +28,12 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder>{
     ArrayList<Album> albums;
     Context context;
 
-    public AlbumAdapter(ArrayList<Album> albums, Context context) {
+    Singer singer;
+
+    public AlbumAdapter(ArrayList<Album> albums, Singer singer, Context context) {
         this.albums = albums;
         this.context = context;
+        this.singer = singer;
     }
 
     @NonNull
@@ -52,6 +56,7 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder>{
         holder.itemView.setOnClickListener(v -> {
             Bundle bundle = new Bundle();
             bundle.putParcelable("album", album);
+            bundle.putParcelable("singer", singer);
             AlbumSongsFragment albumSongsFragment = new AlbumSongsFragment();
             albumSongsFragment.setArguments(bundle);
 

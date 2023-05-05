@@ -39,16 +39,15 @@ public class SingerFragment extends Fragment {
         view = inflater.inflate(R.layout.fragment_singer, container, false);
         firebaseFirestore = FirebaseFirestore.getInstance();
         listSinger = view.findViewById(R.id.listSinger);
-        singers = new ArrayList<>();
+        getSinger();
         adapter = new SingerAdapter(singers,getContext());
         listSinger.setLayoutManager(new GridLayoutManager(getActivity(), 3, GridLayoutManager.HORIZONTAL, false));
         listSinger.setAdapter(adapter);
-        getSinger();
         return view;
     }
 
     private void getSinger() {
-        singers.clear();
+        singers = new ArrayList<>();
         CollectionReference productRefs = firebaseFirestore.collection("Singer");
         productRefs.get().addOnSuccessListener(documentSnapshots -> {
             if (documentSnapshots.isEmpty()) {

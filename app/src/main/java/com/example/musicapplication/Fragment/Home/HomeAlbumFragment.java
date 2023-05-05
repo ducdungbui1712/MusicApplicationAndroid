@@ -61,9 +61,9 @@ public class HomeAlbumFragment extends Fragment {
                     Collections.shuffle(albums);
                     List<Album> randomAlbums = albums.subList(0, 4);
                     ArrayList<Album> randomAlbumsList = new ArrayList<>(randomAlbums);
-                    adapter = new AlbumAdapter(randomAlbumsList,getContext());
+                    adapter = new AlbumAdapter(randomAlbumsList,null,getContext());
                 }else {
-                    adapter = new AlbumAdapter(albums,getContext());
+                    adapter = new AlbumAdapter(albums,null,getContext());
                 }
                 listAlbum.setLayoutManager(new GridLayoutManager(getContext(), 2));
                 listAlbum.setAdapter(adapter);

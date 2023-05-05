@@ -3,8 +3,10 @@ package com.example.musicapplication.Fragment.Album;
 import android.graphics.Color;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -18,6 +20,8 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.musicapplication.Adapter.NewSongAdapter;
+import com.example.musicapplication.Fragment.Singer.SingerAlbumsFragment;
+import com.example.musicapplication.Fragment.Singer.SingerTabFragment;
 import com.example.musicapplication.Model.Album;
 import com.example.musicapplication.Model.Singer;
 import com.example.musicapplication.Model.Song;
@@ -45,6 +49,7 @@ public class AlbumSongsFragment extends Fragment {
     TextView txtAlbumTitle;
     Album album;
     RelativeLayout playerView;
+    Singer singer;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -54,6 +59,7 @@ public class AlbumSongsFragment extends Fragment {
         Bundle bundle = getArguments();
         if (bundle != null) {
             album = bundle.getParcelable("album");
+            singer = bundle.getParcelable("singer");
 
             // Sử dụng biến album để hiển thị thông tin trong Fragment
             init(view);
@@ -105,7 +111,21 @@ public class AlbumSongsFragment extends Fragment {
 
     private void eventClick() {
         backArrow.setOnClickListener(view1 -> {
-            getActivity().getSupportFragmentManager().popBackStack();
+            if(singer != null){
+                SingerTabFragment singerTabFragment = new SingerTabFragment();
+                Bundle albumBundle = new Bundle();
+                albumBundle.putParcelable("singer", singer);
+                singerTabFragment.setArguments(albumBundle);
+                FragmentTransaction fragmentTransaction = ((AppCompatActivity)getContext())
+                        .getSupportFragmentManager()
+                        .beginTransaction();
+                fragmentTransaction.replace(R.id.fragmentLayout, singerTabFragment);
+                fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.commit();
+            }else {
+                getActivity().getSupportFragmentManager().popBackStack();
+            }
         });
     }
 

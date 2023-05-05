@@ -38,7 +38,7 @@ public class AlbumsFragment extends Fragment {
         firebaseFirestore = FirebaseFirestore.getInstance();
         listAlbum = view.findViewById(R.id.listAlbum);
         albums = new ArrayList<>();
-        adapter = new AlbumAdapter(albums,getContext());
+        adapter = new AlbumAdapter(albums,null,getContext());
         listAlbum.setLayoutManager(new GridLayoutManager(getContext(), 2));
         listAlbum.setAdapter(adapter);
         getAlbum();
