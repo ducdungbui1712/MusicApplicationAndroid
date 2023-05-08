@@ -95,11 +95,18 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
         });
 
         firebaseFirestore.collection("Users").document(firebaseUser.getUid().trim())
-                .get().addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
+                .addSnapshotListener((documentSnapshot, e) -> {
+                    if (e != null) {
+                        Log.d("Listen failed.", e.getMessage());
+                        return;
+                    }
+
+                    if (documentSnapshot != null && documentSnapshot.exists()) {
                         ArrayList<String> likedSongIds = (ArrayList<String>) documentSnapshot.get("songLiked");
                         if (likedSongIds != null && likedSongIds.contains(song.getId().trim())) {
                             holder.like_item.setImageResource(R.mipmap.heart_on);
+                        } else {
+                            holder.like_item.setImageResource(R.mipmap.heart);
                         }
                     }
                 });

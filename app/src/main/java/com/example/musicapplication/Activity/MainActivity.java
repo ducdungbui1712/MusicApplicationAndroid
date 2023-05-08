@@ -7,6 +7,7 @@ import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -46,6 +47,7 @@ import com.example.musicapplication.Adapter.NewSongAdapter;
 import com.example.musicapplication.Adapter.PersonalMusicAdapter;
 import com.example.musicapplication.Fragment.AlbumsFragment;
 import com.example.musicapplication.Fragment.HomeFragment;
+import com.example.musicapplication.Fragment.SearchFragment;
 import com.example.musicapplication.Fragment.SingerFragment;
 import com.example.musicapplication.Fragment.NewSongFragment;
 import com.example.musicapplication.Fragment.PersonalMusicFragment;
@@ -82,14 +84,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     Toolbar toolbar;
-    ImageView toolbarLogo, imageViewEdit;
+    ImageView toolbarLogo, imageViewEdit, searchIcon;
     CircleImageView imageViewUserAva;
     TextView txtUserName, txtUserMail;
     ObjectAnimator objectAnimator;
     MediaPlayer mediaPlayer = new MediaPlayer();
     public static boolean isPersonalAdapter = false;
-
     FrameLayout frameLayout;
+    boolean searchClicked = false;
 
     //player_view
     RelativeLayout playerView;
@@ -176,6 +178,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             getSupportFragmentManager().beginTransaction().replace(R.id.fragmentLayout, new HomeFragment()).commit();
             navigationView.setCheckedItem(R.id.navHome);
         }
+
+        searchIcon.setOnClickListener(view -> {
+            Log.d("Search Icon Clicked", "Error");
+            if (searchClicked) {
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .setCustomAnimations(R.anim.slide_in_top, R.anim.slide_out_bottom, R.anim.slide_in_top, R.anim.slide_out_bottom)
+                        .replace(R.id.fragmentLayout, new SearchFragment())
+                        .addToBackStack(null)
+                        .commit();
+                searchIcon.setImageResource(R.drawable.nav_menu_search_close);
+                searchClicked = false;
+            } else {
+                getSupportFragmentManager().popBackStack();
+                searchIcon.setImageResource(R.drawable.nav_menu_search);
+                searchClicked = true;
+            }
+        });
+
         // Register the broadcast receiver
         IntentFilter sendSongFilter = new IntentFilter();
         sendSongFilter.addAction("sendSong");
@@ -341,9 +362,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView = findViewById(R.id.nav_view);
         toolbar = findViewById(R.id.toolbar);
         toolbarLogo = findViewById(R.id.toolbarLogo);
-
-
-
+        searchIcon = findViewById(R.id.searchIcon);
 
 
         //player_view
@@ -688,13 +707,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Log.d("TAG", "Current data: null");
             }
         });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.nav_menu_search, menu);
-        MenuItem searchItem = menu.findItem(R.id.ic_search);
-        return false;
     }
 
     @Override
