@@ -88,8 +88,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     ObjectAnimator objectAnimator;
     MediaPlayer mediaPlayer = new MediaPlayer();
     public static boolean isPersonalAdapter = false;
-    RecyclerView searchBox;
-    NewSongAdapter newSongAdapter;
+
     FrameLayout frameLayout;
 
     //player_view
@@ -657,54 +656,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.nav_menu_search, menu);
         MenuItem searchItem = menu.findItem(R.id.ic_search);
-        SearchView searchView = (SearchView) searchItem.getActionView();
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                // Xử lý tìm kiếm ở đây
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                // Xử lý khi người dùng nhập từ khóa tìm kiếm vào đây
-                if (newText.length() >= 3) {
-
-                    firebaseFirestore.collection("Songs")
-                            .whereGreaterThanOrEqualTo("title", newText)
-                            .whereLessThanOrEqualTo("title",newText + "\uf8ff")
-                            .get().addOnCompleteListener(task -> {
-                                if (task.isSuccessful()) {
-                                    ArrayList<Song> songs = new ArrayList<>();
-                                    for (DocumentSnapshot document : task.getResult()) {
-                                        String id = document.getId().trim();
-                                        String duration = document.getString("duration").trim();
-                                        String image = document.getString("image").trim();
-                                        String link = document.getString("link").trim();
-                                        String title = document.getString("title").trim();
-                                        String lyric = document.getString("lyric");
-                                        int like = document.getLong("likes").intValue();
-                                        Timestamp release = document.getTimestamp("release");
-                                        String idAlbum = document.getString("idAlbum").trim();
-                                        String idSinger = document.getString("idSinger").trim();
-
-                                        Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum,idSinger);
-                                        songs.add(song);
-
-                                    }
-                                    Log.d( "onQueryTextChange: ", String.valueOf(songs));
-                                    newSongAdapter = new NewSongAdapter(getApplicationContext(),null,songs,playerView);
-                                    searchBox.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-                                    searchBox.setAdapter(newSongAdapter);
-                                } else {
-                                    Log.d( "Error getting documents: ", "Error");
-                                }
-                            });
-                }
-                return false;
-            }
-        });
-        return true;
+        return false;
     }
 
     @Override
