@@ -18,6 +18,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.example.musicapplication.Activity.MainActivity;
 import com.example.musicapplication.Adapter.NewSongAdapter;
@@ -127,10 +128,10 @@ public class PersonalMusicFragment extends Fragment {
                 intent.putExtra("isPersonalAdapter", true);
                 getContext().sendBroadcast(intent);
 
-                Log.d("IF 1", "IF 1");
-            }else {
+            } else if (personalSongs.size() == 0){
+                Toast.makeText(getContext(),"Không có bài nhạc nào để phát", Toast.LENGTH_LONG).show();
+            } else {
                 // Query Firestore for all songs
-                Log.d("IF 2", "IF 2");
                 firebaseFirestore.collection("Songs")
                         .get()
                         .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -151,7 +152,6 @@ public class PersonalMusicFragment extends Fragment {
 
                                     songs.add(song);
                                 }
-                                Log.d("songs.size()", String.valueOf(songs.size()));
                                 playSong(personalSongs.get(0));
                                 Intent intent = new Intent("personalSong");
                                 intent.putExtra("song", personalSongs.get(0));
@@ -168,9 +168,6 @@ public class PersonalMusicFragment extends Fragment {
     }
 
     private void playSong(Song firstSong) {
-        Log.d( "personalSongs.size(): ", String.valueOf(personalSongs.size()));
-        Log.d( "songs.size(): ", String.valueOf(songs.size()));
-
         if (PersonalMusicAdapter.personalSongPlayer != null && PersonalMusicAdapter.personalSongPlayer.isPlaying()) {
             PersonalMusicAdapter.personalSongPlayer.stop();
             PersonalMusicAdapter.personalSongPlayer.release();
@@ -202,7 +199,5 @@ public class PersonalMusicFragment extends Fragment {
         if (mainActivity != null) {
             mainActivity.loadData(firstSong);
         }
-
-
     }
 }

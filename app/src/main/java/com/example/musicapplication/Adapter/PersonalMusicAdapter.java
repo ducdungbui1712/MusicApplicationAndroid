@@ -104,6 +104,10 @@ public class PersonalMusicAdapter extends RecyclerView.Adapter<PersonalMusicAdap
                     .update("songLiked", FieldValue.arrayRemove(song.getId().trim()))
                     .addOnSuccessListener(aVoid -> {
                         Log.d("TAG", "Song removed from liked list");
+                        firebaseFirestore.collection("Songs").document(song.getId())
+                                .update("likes", FieldValue.increment(-1))
+                                .addOnSuccessListener(aVoid1 -> Log.d("TAG", "onSuccess: Likes updated"))
+                                .addOnFailureListener(e -> Log.w("TAG", "Error updating likes", e));
                         // Remove the song from the list and notify the adapter
                         int index =  songs.indexOf(song);
                         if (index != -1) {

@@ -205,6 +205,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         Log.d("songID", song.getId());
         Log.d("songs.size()", String.valueOf(songs.size()));
+        Log.d("originalSongs.size()", String.valueOf(originalSongs.size()));
         Log.d("isPersonalAdapter", String.valueOf(isPersonalAdapter));
         Log.d("isPersonalAdapter", String.valueOf(mediaPlayer));
         //playerView
@@ -225,15 +226,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setAnimationSongImage(songImageMiniPlayer);
 
         // Set image resource for like button
-        firebaseFirestore.collection("Users").document(firebaseUser.getUid().trim())
-                .get().addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        ArrayList<String> likedSongIds = (ArrayList<String>) documentSnapshot.get("songLiked");
+        FirebaseFirestore.getInstance().collection("Users").document(firebaseUser.getUid().trim())
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) {
+                        Log.w("TAG", "Listen failed.", error);
+                        return;
+                    }
+                    if (value != null && value.exists()) {
+                        ArrayList<String> likedSongIds = (ArrayList<String>) value.get("songLiked");
                         if (likedSongIds != null && likedSongIds.contains(song.getId().trim())) {
                             like.setImageResource(R.mipmap.heart_on);
                         }else {
                             like.setImageResource(R.mipmap.heart);
                         }
+                    } else {
+                        Log.d("TAG", "Current data: null");
                     }
                 });
 
@@ -293,7 +300,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         objectAnimator.setRepeatCount(ValueAnimator.INFINITE);
         objectAnimator.setRepeatMode(ValueAnimator.RESTART);
 
-        if (mediaPlayer.isPlaying()) {
+        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
             play.setImageResource(R.mipmap.pause);
             playMiniPlayer.setImageResource(R.mipmap.pause);
             objectAnimator.start();
@@ -387,17 +394,47 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void playerViewControl() {
         backArrow.setOnClickListener(view -> exitPlayerView());
-        miniPlayer.setOnClickListener(view -> showPlayerView());
         like.setOnClickListener(view -> {
             firebaseUser = firebaseAuth.getCurrentUser();
             String userID = firebaseUser.getUid().trim();
             DocumentReference docRef = firebaseFirestore.collection("Users").document(userID);
-            docRef.update("songLiked", FieldValue.arrayUnion(song.getId().trim()))
-                    .addOnSuccessListener(aVoid -> {
-                        Log.d("TAG", "onSuccess: Song added to liked list");
-                        like.setImageResource(R.mipmap.heart_on);
-                    })
-                    .addOnFailureListener(e -> Log.w("TAG", "Error adding song to liked list", e));
+            docRef.get().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        ArrayList<String> songLiked = (ArrayList<String>) document.get("songLiked");
+                        if (songLiked.contains(song.getId())) {
+                            // Nếu đã có bài hát trong songLiked thì xóa nó đi
+                            docRef.update("songLiked", FieldValue.arrayRemove(song.getId()))
+                                    .addOnSuccessListener(aVoid -> {
+                                        Log.d("TAG", "onSuccess: Song removed from liked list");
+                                        like.setImageResource(R.mipmap.heart);
+                                        // Giảm số likes của bài hát đi 1
+                                        firebaseFirestore.collection("Songs").document(song.getId())
+                                                .update("likes", FieldValue.increment(-1))
+                                                .addOnSuccessListener(aVoid1 -> Log.d("TAG", "onSuccess: Likes updated"))
+                                                .addOnFailureListener(e -> Log.w("TAG", "Error updating likes", e));
+                                    })
+                                    .addOnFailureListener(e -> Log.w("TAG", "Error removing song from liked list", e));
+                        } else {
+                            // Nếu chưa có bài hát trong songLiked thì thêm nó vào
+                            docRef.update("songLiked", FieldValue.arrayUnion(song.getId()))
+                                    .addOnSuccessListener(aVoid -> {
+                                        Log.d("TAG", "onSuccess: Song added to liked list");
+                                        like.setImageResource(R.mipmap.heart_on);
+                                        // Tăng số likes của bài hát lên 1
+                                        firebaseFirestore.collection("Songs").document(song.getId())
+                                                .update("likes", FieldValue.increment(1))
+                                                .addOnSuccessListener(aVoid1 -> Log.d("TAG", "onSuccess: Likes updated"))
+                                                .addOnFailureListener(e -> Log.w("TAG", "Error updating likes", e));
+                                    })
+                                    .addOnFailureListener(e -> Log.w("TAG", "Error adding song to liked list", e));
+                        }
+                    }
+                } else {
+                    Log.d("TAG", "Error getting document: ", task.getException());
+                }
+            });
         });
         miniPlayer.setOnTouchListener(new View.OnTouchListener() {
             private float startY;
@@ -440,6 +477,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         } else {
                             // User did not drag down enough, so restore the Mini player to its original position
                             miniPlayer.animate().translationY(0).start();
+                            showPlayerView();
                         }
                         return true;
                 }

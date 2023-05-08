@@ -116,6 +116,10 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
                                         .addOnSuccessListener(aVoid -> {
                                             Log.d("TAG", "Song removed from liked list");
                                             holder.like_item.setImageResource(R.mipmap.heart);
+                                            firebaseFirestore.collection("Songs").document(song.getId())
+                                                    .update("likes", FieldValue.increment(-1))
+                                                    .addOnSuccessListener(aVoid1 -> Log.d("TAG", "onSuccess: Likes updated"))
+                                                    .addOnFailureListener(e -> Log.w("TAG", "Error updating likes", e));
                                         })
                                         .addOnFailureListener(e -> Log.d("Error removing song from liked list: ", e.getMessage()));
                             } else {
@@ -125,6 +129,10 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
                                         .addOnSuccessListener(aVoid -> {
                                             Log.d("TAG", "Song added to liked list");
                                             holder.like_item.setImageResource(R.mipmap.heart_on);
+                                            firebaseFirestore.collection("Songs").document(song.getId())
+                                                    .update("likes", FieldValue.increment(1))
+                                                    .addOnSuccessListener(aVoid1 -> Log.d("TAG", "onSuccess: Likes updated"))
+                                                    .addOnFailureListener(e -> Log.w("TAG", "Error updating likes", e));
                                         })
                                         .addOnFailureListener(e -> Log.d("Error adding song to liked list: ", e.getMessage()));
                             }

@@ -127,6 +127,8 @@ public class AlbumSongsFragment extends Fragment {
                 getActivity().getSupportFragmentManager().popBackStack();
             }
         });
+
+
     }
 
     private void init(View view) {

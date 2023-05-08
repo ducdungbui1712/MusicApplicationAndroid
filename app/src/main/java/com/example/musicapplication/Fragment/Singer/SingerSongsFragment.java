@@ -21,10 +21,12 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.musicapplication.Activity.MainActivity;
 import com.example.musicapplication.Adapter.NewSongAdapter;
+import com.example.musicapplication.Adapter.PersonalMusicAdapter;
 import com.example.musicapplication.Model.Singer;
 import com.example.musicapplication.Model.Song;
 import com.example.musicapplication.R;
@@ -45,6 +47,7 @@ public class SingerSongsFragment extends Fragment {
     CollapsingToolbarLayout collapsingToolbarLayout;
     RecyclerView recyclerView;
     FloatingActionButton floatingActionButton;
+    ArrayList<Song> singerSongs;
     ArrayList<Song> songs;
     FirebaseFirestore firebaseFirestore;
     NewSongAdapter adapter;
@@ -62,11 +65,19 @@ public class SingerSongsFragment extends Fragment {
             singer = bundle.getParcelable("singer");
             // Sử dụng biến singer để hiển thị thông tin trong Fragment
             init(view);
+            firebaseFirestore = FirebaseFirestore.getInstance();
+            songs = new ArrayList<>();
+            singerSongs = new ArrayList<>();
+
             floatingActionButton.setBackgroundColor(Color.BLACK);
             collapsingToolbarLayout.setExpandedTitleColor(Color.WHITE);
             collapsingToolbarLayout.setExpandedTitleTextAppearance(R.style.ExpandedAppBar);
             collapsingToolbarLayout.setCollapsedTitleTextAppearance(R.style.CollapsedAppBar);
             GetCasi();
+            GetData();
+            adapter = new NewSongAdapter(getContext(),null, singerSongs, playerView);
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
+            recyclerView.setAdapter(adapter);
         }
         return view;
     }
@@ -104,17 +115,11 @@ public class SingerSongsFragment extends Fragment {
         floatingActionButton = view.findViewById(R.id.floatingButtonPlay);
         imageView = view.findViewById(R.id.imageView);
         textViewArtistName = view.findViewById(R.id.textViewArtistName);
-        firebaseFirestore = FirebaseFirestore.getInstance();
-        songs = new ArrayList<>();
         playerView = getActivity().findViewById(R.id.playerView);
-        adapter = new NewSongAdapter(getContext(),null, songs, playerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
-        recyclerView.setAdapter(adapter);
-        GetData();
     }
 
     private void GetData() {
-        songs.clear();
+        singerSongs.clear();
         CollectionReference songsRef = firebaseFirestore.collection("Songs");
         Query query = songsRef.whereEqualTo("idSinger", singer.getId().trim());
         query
@@ -136,8 +141,9 @@ public class SingerSongsFragment extends Fragment {
                             String idSinger = document.getString("idSinger").trim();
 
                             Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum,idSinger);
-                            songs.add(song);
+                            singerSongs.add(song);
                         }
+                        Log.d("singerSong", String.valueOf(singerSongs.size()));
                         adapter.notifyDataSetChanged();
                         eventClick();
                     }
@@ -147,33 +153,83 @@ public class SingerSongsFragment extends Fragment {
     private void eventClick() {
         floatingActionButton.setEnabled(true);
         floatingActionButton.setOnClickListener(v -> {
-            Intent intent = new Intent("sendListSongs");
-            intent.putExtra("sendListSongs", songs);
-            getContext().sendBroadcast(intent);
-            if (NewSongAdapter.newSongPlayer != null && NewSongAdapter.newSongPlayer.isPlaying()) {
-                NewSongAdapter.newSongPlayer.stop();
-                NewSongAdapter.newSongPlayer.reset();
-            }
-
-            // Start playing the new song
-            NewSongAdapter.newSongPlayer = new MediaPlayer();
-            try {
-                NewSongAdapter.newSongPlayer.setDataSource(songs.get(0).getLink().trim());
-                NewSongAdapter.newSongPlayer.prepare();
-                NewSongAdapter.newSongPlayer.start();
-                Animation slide_up = AnimationUtils.loadAnimation(getContext(),
-                        R.anim.slide_up);
-                playerView.setVisibility(View.VISIBLE);
-                playerView.startAnimation(slide_up);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            // Lấy ra MainActivity hiện tại
-            MainActivity mainActivity = (MainActivity) getActivity();
-            // Gọi phương thức loadData() trong MainActivity
-            if (mainActivity != null) {
-                mainActivity.loadData(songs.get(0));
-            }
+//            if (singerSongs.size() > 1){
+//                playSong(singerSongs.get(0));
+//                Intent intent = new Intent("singerSong");
+//                intent.putExtra("song", singerSongs.get(0));
+//                intent.putExtra("songs", singerSongs);
+//                intent.putExtra("isPersonalAdapter", false);
+//                getContext().sendBroadcast(intent);
+//                Log.d("If1", "If1");
+//            } else {
+//                Log.d("If2", "If2");
+//                // Query Firestore for all songs
+//                firebaseFirestore.collection("Songs")
+//                        .get()
+//                        .addOnSuccessListener(queryDocumentSnapshots -> {
+//                            if (!queryDocumentSnapshots.isEmpty()) {
+//                                for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+//                                    String id = document.getId().trim();
+//                                    String duration = document.getString("duration").trim();
+//                                    String image = document.getString("image").trim();
+//                                    String link = document.getString("link").trim();
+//                                    String title = document.getString("title").trim();
+//                                    String lyric = document.getString("lyric");
+//                                    int like = document.getLong("likes").intValue();
+//                                    Timestamp release = document.getTimestamp("release");
+//                                    String idAlbum = document.getString("idAlbum").trim();
+//                                    String idSinger = document.getString("idSinger").trim();
+//
+//                                    Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum, idSinger);
+//
+//                                    songs.add(song);
+//                                }
+//                                playSong(singerSongs.get(0));
+//                                Intent intent = new Intent("personalSong");
+//                                intent.putExtra("song", singerSongs.get(0));
+//                                intent.putExtra("songs", songs);
+//                                intent.putExtra("isPersonalAdapter", true);
+//                                getContext().sendBroadcast(intent);
+//                            } else {
+//                                Log.d("No song found", "Empty Firestore collection");
+//                            }
+//                        })
+//                        .addOnFailureListener(e -> Log.d("Error getting songs", e.getMessage()));
+//            }
         });
+    }
+
+    private void playSong(Song song) {
+        if (PersonalMusicAdapter.personalSongPlayer != null && PersonalMusicAdapter.personalSongPlayer.isPlaying()) {
+            PersonalMusicAdapter.personalSongPlayer.stop();
+            PersonalMusicAdapter.personalSongPlayer.release();
+            PersonalMusicAdapter.personalSongPlayer = null;
+        }
+
+        if (NewSongAdapter.newSongPlayer != null && NewSongAdapter.newSongPlayer.isPlaying()) {
+            NewSongAdapter.newSongPlayer.stop();
+            NewSongAdapter.newSongPlayer.release();
+            NewSongAdapter.newSongPlayer = null;
+        }
+
+        // Start playing the new song
+        NewSongAdapter.newSongPlayer = new MediaPlayer();
+        try {
+            NewSongAdapter.newSongPlayer.setDataSource(song.getLink().trim());
+            NewSongAdapter.newSongPlayer.prepare();
+            NewSongAdapter.newSongPlayer.start();
+            Animation slide_up = AnimationUtils.loadAnimation(getContext(),
+                    R.anim.slide_up);
+            playerView.setVisibility(View.VISIBLE);
+            playerView.startAnimation(slide_up);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // Lấy ra MainActivity hiện tại
+        MainActivity mainActivity = (MainActivity) getActivity();
+        // Gọi phương thức loadData() trong MainActivity
+        if (mainActivity != null) {
+            mainActivity.loadData(song);
+        }
     }
 }
