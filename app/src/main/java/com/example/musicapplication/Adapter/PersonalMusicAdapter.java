@@ -35,6 +35,9 @@ public class PersonalMusicAdapter extends RecyclerView.Adapter<PersonalMusicAdap
     ArrayList<Song> songs;
 
     static public MediaPlayer personalSongPlayer;
+    FirebaseFirestore firebaseFirestore;
+    FirebaseAuth firebaseAuth;
+    FirebaseUser firebaseUser;
     RelativeLayout playerView;
 
 
@@ -65,28 +68,27 @@ public class PersonalMusicAdapter extends RecyclerView.Adapter<PersonalMusicAdap
                 .load(song.getImage().trim())
                 .into(holder.imageViewAlbumArt);
 
-        FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-        firebaseFirestore.collection("Albums").document(song.getIdAlbum().trim()).get().addOnCompleteListener(task -> {
+        firebaseFirestore.collection("Albums").document(song.getIdAlbum()).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot document = task.getResult();
                 if (document.exists()) {
                     String albumName = document.getString("title");
+                    String singerName = document.getString("singer").trim();
                     holder.album.setText(albumName);
-                }
-            }
-        });
-
-        firebaseFirestore.collection("Singer").document(song.getIdSinger().trim()).get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                DocumentSnapshot document = task.getResult();
-                if (document.exists()) {
-                    String singerName = document.getString("name").trim();
                     holder.artist.setText(singerName);
                 }
             }
         });
+
+//        firebaseFirestore.collection("Singer").document(song.getIdSinger().trim()).get().addOnCompleteListener(task -> {
+//            if (task.isSuccessful()) {
+//                DocumentSnapshot document = task.getResult();
+//                if (document.exists()) {
+//                    String singerName = document.getString("name").trim();
+//                    holder.artist.setText(singerName);
+//                }
+//            }
+//        });
 
         firebaseFirestore.collection("Users").document(firebaseUser.getUid().trim())
                 .get().addOnSuccessListener(documentSnapshot -> {
@@ -176,6 +178,9 @@ public class PersonalMusicAdapter extends RecyclerView.Adapter<PersonalMusicAdap
             artist = itemView.findViewById(R.id.artist);
             time = itemView.findViewById(R.id.time);
             like_item = itemView.findViewById(R.id.like_personalSong_item);
+            firebaseFirestore = FirebaseFirestore.getInstance();
+            firebaseAuth = FirebaseAuth.getInstance();
+            firebaseUser = firebaseAuth.getCurrentUser();
         }
     }
 }

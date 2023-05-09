@@ -34,7 +34,9 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
     Context context;
     ArrayList<Song> rankSongs;
     ArrayList<Song> songs;
-
+    FirebaseFirestore firebaseFirestore;
+    FirebaseAuth firebaseAuth;
+    FirebaseUser firebaseUser;
     static public MediaPlayer newSongPlayer;
     RelativeLayout playerView;
 
@@ -71,28 +73,29 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
                 .load(song.getImage().trim())
                 .into(holder.imageViewAlbumArt);
 
-        FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+
         firebaseFirestore.collection("Albums").document(song.getIdAlbum().trim()).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot document = task.getResult();
                 if (document.exists()) {
                     String albumName = document.getString("title").trim();
+                    String singerName = document.getString("singer").trim();
                     holder.album.setText(albumName);
-                }
-            }
-        });
-
-        firebaseFirestore.collection("Singer").document(song.getIdSinger().trim()).get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                DocumentSnapshot document = task.getResult();
-                if (document.exists()) {
-                    String singerName = document.getString("name").trim();
                     holder.artist.setText(singerName);
                 }
             }
         });
+
+//        firebaseFirestore.collection("Singer").document(song.getIdSinger().trim()).get().addOnCompleteListener(task -> {
+//            if (task.isSuccessful()) {
+//                DocumentSnapshot document = task.getResult();
+//                if (document.exists()) {
+//                    String singerName = document.getString("name").trim();
+//
+//                    holder.artist.setText(singerName);
+//                }
+//            }
+//        });
 
         firebaseFirestore.collection("Users").document(firebaseUser.getUid().trim())
                 .addSnapshotListener((documentSnapshot, e) -> {
@@ -208,6 +211,9 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
             artist = itemView.findViewById(R.id.artist);
             time = itemView.findViewById(R.id.time);
             like_item = itemView.findViewById(R.id.like_newSong_item);
+            firebaseFirestore = FirebaseFirestore.getInstance();
+            firebaseAuth = FirebaseAuth.getInstance();
+            firebaseUser = firebaseAuth.getCurrentUser();
         }
     }
 }

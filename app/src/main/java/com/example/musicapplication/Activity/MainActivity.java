@@ -330,23 +330,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void getAlbumAndArtistTitle(Song song) {
-        firebaseFirestore = FirebaseFirestore.getInstance();
-        DocumentReference albumRef = firebaseFirestore.collection("Albums").document(song.getIdAlbum().trim());
-        DocumentReference artistRef = firebaseFirestore.collection("Singer").document(song.getIdSinger().trim());
 
-        albumRef.get().addOnSuccessListener(documentSnapshot -> {
-            if (documentSnapshot.exists()) {
-                String albumName = documentSnapshot.getString("title");
-                albumTitle.setText(albumName);
-            }
-        });
+        firebaseFirestore.collection("Albums").document(song.getIdAlbum().trim())
+                .addSnapshotListener((documentSnapshot, e) -> {
+                    if (documentSnapshot != null && documentSnapshot.exists()) {
+                        String albumName = documentSnapshot.getString("title");
+                        String singerName = documentSnapshot.getString("singer");
+                        albumTitle.setText(albumName);
+                        artistName.setText(singerName);
+                        Log.d("albumName", albumName);
+                        Log.d("singerName", singerName);
+                    }
+                });
 
-        artistRef.get().addOnSuccessListener(documentSnapshot -> {
-            if (documentSnapshot.exists()) {
-                String singerName = documentSnapshot.getString("name");
-                artistName.setText(singerName);
-            }
-        });
+//        firebaseFirestore.collection("Singer").document(song.getIdSinger().trim())
+//                .addSnapshotListener((documentSnapshot, e) -> {
+//                    if (documentSnapshot != null && documentSnapshot.exists()) {
+//                        String singerName = documentSnapshot.getString("name");
+//                        artistName.setText(singerName);
+//                    }
+//                });
     }
 
 
