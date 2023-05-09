@@ -9,6 +9,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
 
@@ -62,6 +63,13 @@ public class ProfileFragment extends Fragment {
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
+        ImageView searchIcon = getActivity().findViewById(R.id.searchIcon);
+        Fragment currentFragment = ((AppCompatActivity)getContext()).getSupportFragmentManager().findFragmentById(R.id.fragmentLayout);
+        if (currentFragment instanceof SearchFragment) {
+            searchIcon.setImageResource(R.drawable.nav_menu_search_close);
+        } else {
+            searchIcon.setImageResource(R.drawable.nav_menu_search);
+        }
         imageViewUserAva = view.findViewById(R.id.imageViewUserAva);
         imageViewEditIcon = view.findViewById(R.id.imageViewEditIcon);
         btnEditProfile = view.findViewById(R.id.btnEditProfile);

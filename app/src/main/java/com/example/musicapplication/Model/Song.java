@@ -8,11 +8,11 @@ import com.google.firebase.Timestamp;
 import java.util.Date;
 
 public class Song implements Parcelable {
-    String id, duration, image, link, title, lyric,idAlbum, idSinger;
+    String id, duration, image, link, title, lyric,idAlbum, idSinger, idBanner;
     int like;
     Timestamp release;
 
-    public Song(String id, String duration, String image,  String link, String title, String lyric, int like, Timestamp release, String idAlbum, String idSinger) {
+    public Song(String id, String duration, String image,  String link, String title, String lyric, int like, Timestamp release, String idAlbum, String idSinger, String idBanner) {
         this.id = id;
         this.duration = duration;
         this.image = image;
@@ -23,7 +23,7 @@ public class Song implements Parcelable {
         this.release = release;
         this.idAlbum = idAlbum;
         this.idSinger = idSinger;
-
+        this.idBanner = idBanner;
     }
 
     protected Song(Parcel in) {
@@ -38,6 +38,7 @@ public class Song implements Parcelable {
         release = new Timestamp(new Date(in.readLong()));
         idAlbum = in.readString();
         idSinger = in.readString();
+        idBanner = in.readString();
     }
 
     public static final Creator<Song> CREATOR = new Creator<Song>() {
@@ -89,6 +90,10 @@ public class Song implements Parcelable {
         return like;
     }
 
+    public String getIdBanner() {
+        return idBanner;
+    }
+
     public Timestamp getRelease() {
         return release;
     }
@@ -112,5 +117,6 @@ public class Song implements Parcelable {
         dest.writeLong(release.toDate().getTime());
         dest.writeString(idAlbum);
         dest.writeString(idSinger);
+        dest.writeString(idBanner);
     }
 }

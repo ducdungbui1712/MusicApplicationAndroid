@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.musicapplication.Adapter.AlbumAdapter;
@@ -37,6 +38,7 @@ public class SingerAlbumsFragment extends Fragment {
     AlbumAdapter adapter;
     ArrayList<Album> albums;
     FirebaseFirestore firebaseFirestore;
+    ImageView backArrow;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

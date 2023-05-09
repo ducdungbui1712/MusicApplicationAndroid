@@ -56,7 +56,10 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder>{
         holder.itemView.setOnClickListener(v -> {
             Bundle bundle = new Bundle();
             bundle.putParcelable("album", album);
-            bundle.putParcelable("singer", singer);
+            if(singer != null){
+                bundle.putParcelable("singer", singer);
+            }
+
             AlbumSongsFragment albumSongsFragment = new AlbumSongsFragment();
             albumSongsFragment.setArguments(bundle);
 

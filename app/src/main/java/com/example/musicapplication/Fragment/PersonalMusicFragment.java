@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,6 +18,7 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -56,6 +58,13 @@ public class PersonalMusicFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_personal_music, container, false);
+        ImageView searchIcon = getActivity().findViewById(R.id.searchIcon);
+        Fragment currentFragment = ((AppCompatActivity)getContext()).getSupportFragmentManager().findFragmentById(R.id.fragmentLayout);
+        if (currentFragment instanceof SearchFragment) {
+            searchIcon.setImageResource(R.drawable.nav_menu_search_close);
+        } else {
+            searchIcon.setImageResource(R.drawable.nav_menu_search);
+        }
         firebaseFirestore = FirebaseFirestore.getInstance();
         firebaseAuth = FirebaseAuth.getInstance();
         recyclerViewPersonalSong = view.findViewById(R.id.recyclerViewPersonalSong);
@@ -101,8 +110,8 @@ public class PersonalMusicFragment extends Fragment {
                                         Timestamp release = document.getTimestamp("release");
                                         String idAlbum = document.getString("idAlbum").trim();
                                         String idSinger = document.getString("idSinger").trim();
-
-                                        Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum, idSinger);
+                                        String idBanner = document.getString("idBanner");
+                                        Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum, idSinger, idBanner);
                                         personalSongs.add(song);
                                     }
                                     personalMusicAdapter.notifyDataSetChanged();
@@ -147,8 +156,8 @@ public class PersonalMusicFragment extends Fragment {
                                     Timestamp release = document.getTimestamp("release");
                                     String idAlbum = document.getString("idAlbum").trim();
                                     String idSinger = document.getString("idSinger").trim();
-
-                                    Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum, idSinger);
+                                    String idBanner = document.getString("idBanner");
+                                    Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum, idSinger, idBanner);
 
                                     songs.add(song);
                                 }

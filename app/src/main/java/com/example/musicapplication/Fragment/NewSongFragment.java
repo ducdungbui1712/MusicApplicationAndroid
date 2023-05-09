@@ -3,6 +3,7 @@ package com.example.musicapplication.Fragment;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -11,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.example.musicapplication.Adapter.NewSongAdapter;
@@ -42,6 +44,13 @@ public class NewSongFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_new_song, container, false);
+        ImageView searchIcon = getActivity().findViewById(R.id.searchIcon);
+        Fragment currentFragment = ((AppCompatActivity)getContext()).getSupportFragmentManager().findFragmentById(R.id.fragmentLayout);
+        if (currentFragment instanceof SearchFragment) {
+            searchIcon.setImageResource(R.drawable.nav_menu_search_close);
+        } else {
+            searchIcon.setImageResource(R.drawable.nav_menu_search);
+        }
         firebaseFirestore = FirebaseFirestore.getInstance();
         recyclerViewNewSongs = view.findViewById(R.id.recyclerViewNewSongs);
         playerView = getActivity().findViewById(R.id.playerView);
@@ -77,8 +86,8 @@ public class NewSongFragment extends Fragment {
                     Timestamp release = document.getTimestamp("release");
                     String idAlbum = document.getString("idAlbum").trim();
                     String idSinger = document.getString("idSinger").trim();
-
-                    Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum, idSinger);
+                    String idBanner = document.getString("idBanner");
+                    Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum, idSinger, idBanner);
                     songs.add(song);
                 }
                 newSongAdapter.notifyDataSetChanged();

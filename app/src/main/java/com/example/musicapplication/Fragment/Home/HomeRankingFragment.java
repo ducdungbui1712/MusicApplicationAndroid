@@ -79,8 +79,8 @@ public class HomeRankingFragment extends Fragment {
                             Timestamp release = document.getTimestamp("release");
                             String idAlbum = document.getString("idAlbum").trim();
                             String idSinger = document.getString("idSinger").trim();
-
-                            Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum, idSinger);
+                            String idBanner = document.getString("idBanner");
+                            Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum, idSinger, idBanner);
                             songs.add(song);
                         }
                         List<Song> top5Songs = songs.subList(0, 5);

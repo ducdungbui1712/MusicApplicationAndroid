@@ -3,6 +3,7 @@ package com.example.musicapplication.Fragment;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -11,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import com.example.musicapplication.Adapter.SingerAdapter;
 import com.example.musicapplication.Model.Singer;
@@ -37,6 +39,13 @@ public class SingerFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_singer, container, false);
+        ImageView searchIcon = getActivity().findViewById(R.id.searchIcon);
+        Fragment currentFragment = ((AppCompatActivity)getContext()).getSupportFragmentManager().findFragmentById(R.id.fragmentLayout);
+        if (currentFragment instanceof SearchFragment) {
+            searchIcon.setImageResource(R.drawable.nav_menu_search_close);
+        } else {
+            searchIcon.setImageResource(R.drawable.nav_menu_search);
+        }
         firebaseFirestore = FirebaseFirestore.getInstance();
         listSinger = view.findViewById(R.id.listSinger);
         getSinger();

@@ -2,6 +2,7 @@ package com.example.musicapplication.Fragment;
 
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -10,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import com.example.musicapplication.Adapter.AlbumAdapter;
 import com.example.musicapplication.Model.Album;
@@ -35,6 +37,13 @@ public class AlbumsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_albums, container, false);
+        ImageView searchIcon = getActivity().findViewById(R.id.searchIcon);
+        Fragment currentFragment = ((AppCompatActivity)getContext()).getSupportFragmentManager().findFragmentById(R.id.fragmentLayout);
+        if (currentFragment instanceof SearchFragment) {
+            searchIcon.setImageResource(R.drawable.nav_menu_search_close);
+        } else {
+            searchIcon.setImageResource(R.drawable.nav_menu_search);
+        }
         firebaseFirestore = FirebaseFirestore.getInstance();
         listAlbum = view.findViewById(R.id.listAlbum);
         albums = new ArrayList<>();

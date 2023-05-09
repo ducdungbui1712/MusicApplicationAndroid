@@ -19,7 +19,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.example.musicapplication.Activity.MainActivity;
 import com.example.musicapplication.Adapter.NewSongAdapter;
+import com.example.musicapplication.Fragment.SearchFragment;
 import com.example.musicapplication.Fragment.Singer.SingerAlbumsFragment;
 import com.example.musicapplication.Fragment.Singer.SingerTabFragment;
 import com.example.musicapplication.Model.Album;
@@ -56,6 +58,13 @@ public class AlbumSongsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_album_songs, container, false);
+        ImageView searchIcon = getActivity().findViewById(R.id.searchIcon);
+        Fragment currentFragment = ((AppCompatActivity)getContext()).getSupportFragmentManager().findFragmentById(R.id.fragmentLayout);
+        if (currentFragment instanceof SearchFragment) {
+            searchIcon.setImageResource(R.drawable.nav_menu_search_close);
+        } else {
+            searchIcon.setImageResource(R.drawable.nav_menu_search);
+        }
         Bundle bundle = getArguments();
         if (bundle != null) {
             album = bundle.getParcelable("album");
@@ -99,8 +108,8 @@ public class AlbumSongsFragment extends Fragment {
                             Timestamp release = document.getTimestamp("release");
                             String idAlbum = document.getString("idAlbum").trim();
                             String idSinger = document.getString("idSinger").trim();
-
-                            Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum,idSinger);
+                            String idBanner = document.getString("idBanner");
+                            Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum,idSinger, idBanner);
                             songs.add(song);
                         }
                         adapter.notifyDataSetChanged();

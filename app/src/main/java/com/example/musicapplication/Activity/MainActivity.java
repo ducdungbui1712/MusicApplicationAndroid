@@ -91,7 +91,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     MediaPlayer mediaPlayer = new MediaPlayer();
     public static boolean isPersonalAdapter = false;
     FrameLayout frameLayout;
-    boolean searchClicked = false;
 
     //player_view
     RelativeLayout playerView;
@@ -180,8 +179,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         searchIcon.setOnClickListener(view -> {
-            Log.d("Search Icon Clicked", "Error");
-            if (searchClicked) {
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragmentLayout);
+            if (currentFragment instanceof SearchFragment) {
+                getSupportFragmentManager().popBackStack();
+                searchIcon.setImageResource(R.drawable.nav_menu_search);
+            } else {
                 getSupportFragmentManager()
                         .beginTransaction()
                         .setCustomAnimations(R.anim.slide_in_top, R.anim.slide_out_bottom, R.anim.slide_in_top, R.anim.slide_out_bottom)
@@ -189,11 +191,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         .addToBackStack(null)
                         .commit();
                 searchIcon.setImageResource(R.drawable.nav_menu_search_close);
-                searchClicked = false;
-            } else {
-                getSupportFragmentManager().popBackStack();
-                searchIcon.setImageResource(R.drawable.nav_menu_search);
-                searchClicked = true;
             }
         });
 
