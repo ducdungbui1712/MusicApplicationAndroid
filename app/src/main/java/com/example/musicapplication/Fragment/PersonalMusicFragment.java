@@ -129,8 +129,10 @@ public class PersonalMusicFragment extends Fragment {
 
     private void eventClick() {
         btnPlayAll.setOnClickListener(v -> {
-            if (personalSongs.size() > 1){
+            if (personalSongs.size() >= 2){
+                Log.d("personalSongs", String.valueOf(personalSongs.size()));
                 playSong(personalSongs.get(0));
+
                 Intent intent = new Intent("personalSong");
                 intent.putExtra("song", personalSongs.get(0));
                 intent.putExtra("songs", personalSongs);
@@ -201,12 +203,6 @@ public class PersonalMusicFragment extends Fragment {
             playerView.startAnimation(slide_up);
         } catch (IOException e) {
             e.printStackTrace();
-        }
-        // Lấy ra MainActivity hiện tại
-        MainActivity mainActivity = (MainActivity) getActivity();
-        // Gọi phương thức loadData() trong MainActivity
-        if (mainActivity != null) {
-            mainActivity.loadData(firstSong);
         }
     }
 }

@@ -143,7 +143,7 @@ public class SingerSongsFragment extends Fragment {
                             Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum,idSinger, idBanner);
                             singerSongs.add(song);
                         }
-                        Log.d("singerSong", String.valueOf(singerSongs.size()));
+
                         adapter.notifyDataSetChanged();
                         eventClick();
                     }
@@ -153,49 +153,52 @@ public class SingerSongsFragment extends Fragment {
     private void eventClick() {
         floatingActionButton.setEnabled(true);
         floatingActionButton.setOnClickListener(v -> {
-//            if (singerSongs.size() > 1){
-//                playSong(singerSongs.get(0));
-//                Intent intent = new Intent("singerSong");
-//                intent.putExtra("song", singerSongs.get(0));
-//                intent.putExtra("songs", singerSongs);
-//                intent.putExtra("isPersonalAdapter", false);
-//                getContext().sendBroadcast(intent);
-//                Log.d("If1", "If1");
-//            } else {
-//                Log.d("If2", "If2");
-//                // Query Firestore for all songs
-//                firebaseFirestore.collection("Songs")
-//                        .get()
-//                        .addOnSuccessListener(queryDocumentSnapshots -> {
-//                            if (!queryDocumentSnapshots.isEmpty()) {
-//                                for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
-//                                    String id = document.getId().trim();
-//                                    String duration = document.getString("duration").trim();
-//                                    String image = document.getString("image").trim();
-//                                    String link = document.getString("link").trim();
-//                                    String title = document.getString("title").trim();
-//                                    String lyric = document.getString("lyric");
-//                                    int like = document.getLong("likes").intValue();
-//                                    Timestamp release = document.getTimestamp("release");
-//                                    String idAlbum = document.getString("idAlbum").trim();
-//                                    String idSinger = document.getString("idSinger").trim();
-//
-//                                    Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum, idSinger);
-//
-//                                    songs.add(song);
-//                                }
-//                                playSong(singerSongs.get(0));
-//                                Intent intent = new Intent("personalSong");
-//                                intent.putExtra("song", singerSongs.get(0));
-//                                intent.putExtra("songs", songs);
-//                                intent.putExtra("isPersonalAdapter", true);
-//                                getContext().sendBroadcast(intent);
-//                            } else {
-//                                Log.d("No song found", "Empty Firestore collection");
-//                            }
-//                        })
-//                        .addOnFailureListener(e -> Log.d("Error getting songs", e.getMessage()));
-//            }
+            Log.d("floatingActionButton" , "Clicked");
+            if (singerSongs.size() >= 2){
+                playSong(singerSongs.get(0));
+                Intent intent = new Intent("sendSong");
+                intent.putExtra("song", singerSongs.get(0));
+                intent.putExtra("songs", singerSongs);
+                intent.putExtra("isPersonalAdapter", false);
+                getContext().sendBroadcast(intent);
+                Log.d("singerSong", String.valueOf(singerSongs.size()));
+                Log.d("If1", "If1");
+            } else {
+                Log.d("If2", "If2");
+                // Query Firestore for all songs
+                firebaseFirestore.collection("Songs")
+                        .get()
+                        .addOnSuccessListener(queryDocumentSnapshots -> {
+                            if (!queryDocumentSnapshots.isEmpty()) {
+                                for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                                    String id = document.getId().trim();
+                                    String duration = document.getString("duration").trim();
+                                    String image = document.getString("image").trim();
+                                    String link = document.getString("link").trim();
+                                    String title = document.getString("title").trim();
+                                    String lyric = document.getString("lyric");
+                                    int like = document.getLong("likes").intValue();
+                                    Timestamp release = document.getTimestamp("release");
+                                    String idAlbum = document.getString("idAlbum").trim();
+                                    String idSinger = document.getString("idSinger").trim();
+                                    String idBanner = document.getString("idBanner");
+
+                                    Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum, idSinger, idBanner);
+
+                                    songs.add(song);
+                                }
+                                playSong(singerSongs.get(0));
+                                Intent intent = new Intent("sendSong");
+                                intent.putExtra("song", singerSongs.get(0));
+                                intent.putExtra("songs", songs);
+                                intent.putExtra("isPersonalAdapter", false);
+                                getContext().sendBroadcast(intent);
+                            } else {
+                                Log.d("No song found", "Empty Firestore collection");
+                            }
+                        })
+                        .addOnFailureListener(e -> Log.d("Error getting songs", e.getMessage()));
+            }
         });
     }
 
@@ -224,12 +227,6 @@ public class SingerSongsFragment extends Fragment {
             playerView.startAnimation(slide_up);
         } catch (IOException e) {
             e.printStackTrace();
-        }
-        // Lấy ra MainActivity hiện tại
-        MainActivity mainActivity = (MainActivity) getActivity();
-        // Gọi phương thức loadData() trong MainActivity
-        if (mainActivity != null) {
-            mainActivity.loadData(song);
         }
     }
 }

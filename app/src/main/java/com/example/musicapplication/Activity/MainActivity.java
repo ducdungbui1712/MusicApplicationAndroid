@@ -125,10 +125,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     isPersonalAdapter = intent.getBooleanExtra("isPersonalAdapter", false);
                     mediaPlayer = isPersonalAdapter ? PersonalMusicAdapter.personalSongPlayer : NewSongAdapter.newSongPlayer;
                     loadData(song);
-                    songs.clear();
-                    originalSongs.clear();
-                    songs.addAll(ListSongs);
-                    originalSongs.addAll(songs);
+                    updateSongList(ListSongs);
                 }
             }
         }
@@ -143,15 +140,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     ArrayList<Song> ListSongs = intent.getParcelableArrayListExtra("songs");
                     isPersonalAdapter = intent.getBooleanExtra("isPersonalAdapter", false);
                     mediaPlayer = isPersonalAdapter ? PersonalMusicAdapter.personalSongPlayer : NewSongAdapter.newSongPlayer;
+
                     loadData(song);
-                    songs.clear();
-                    originalSongs.clear();
-                    songs.addAll(ListSongs);
-                    originalSongs.addAll(songs);
+                    updateSongList(ListSongs);
                 }
             }
         }
     };
+
+    private void updateSongList(ArrayList<Song> songs) {
+        ArrayList<Song> newSongs = new ArrayList<>(songs);
+        this.songs.clear();
+        this.songs.addAll(newSongs);
+        originalSongs.clear();
+        originalSongs.addAll(newSongs);
+    }
+
 
 
     @Override
@@ -195,12 +199,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
         // Register the broadcast receiver
-        IntentFilter sendSongFilter = new IntentFilter();
-        sendSongFilter.addAction("sendSong");
-        IntentFilter personalSongFilter = new IntentFilter();
-        personalSongFilter.addAction("personalSong");
-        registerReceiver(sendSongReceiver, sendSongFilter);
-        registerReceiver(personalSongReceiver, personalSongFilter);
+        registerReceiver(sendSongReceiver, new IntentFilter("sendSong"));
+        registerReceiver(personalSongReceiver, new IntentFilter("personalSong"));
         playerViewControl();
     }
 

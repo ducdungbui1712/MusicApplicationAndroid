@@ -1,6 +1,8 @@
 package com.example.musicapplication.Fragment.Album;
 
+import android.content.Intent;
 import android.graphics.Color;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +16,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -21,6 +25,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.musicapplication.Activity.MainActivity;
 import com.example.musicapplication.Adapter.NewSongAdapter;
+import com.example.musicapplication.Adapter.PersonalMusicAdapter;
 import com.example.musicapplication.Fragment.SearchFragment;
 import com.example.musicapplication.Fragment.Singer.SingerAlbumsFragment;
 import com.example.musicapplication.Fragment.Singer.SingerTabFragment;
@@ -36,6 +41,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class AlbumSongsFragment extends Fragment {
@@ -44,6 +50,7 @@ public class AlbumSongsFragment extends Fragment {
     CollapsingToolbarLayout collapsingToolbarLayout;
     RecyclerView recyclerView;
     FloatingActionButton floatingActionButton;
+    ArrayList<Song> albumSongs;
     ArrayList<Song> songs;
     FirebaseFirestore firebaseFirestore;
     NewSongAdapter adapter;
@@ -88,7 +95,7 @@ public class AlbumSongsFragment extends Fragment {
                 .load(album.getImage().trim())
                 .into(imageView);
 
-        songs.clear();
+        albumSongs.clear();
         CollectionReference songsRef = firebaseFirestore.collection("Songs");
         Query query = songsRef.whereEqualTo("idAlbum", album.getId().trim());
         query
@@ -110,7 +117,7 @@ public class AlbumSongsFragment extends Fragment {
                             String idSinger = document.getString("idSinger").trim();
                             String idBanner = document.getString("idBanner");
                             Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum,idSinger, idBanner);
-                            songs.add(song);
+                            albumSongs.add(song);
                         }
                         adapter.notifyDataSetChanged();
                         eventClick();
@@ -137,7 +144,79 @@ public class AlbumSongsFragment extends Fragment {
             }
         });
 
+        floatingActionButton.setEnabled(true);
+        floatingActionButton.setOnClickListener(v -> {
+            if (albumSongs.size() >= 2){
+                playSong(albumSongs.get(0));
+                Intent intent = new Intent("sendSong");
+                intent.putExtra("song", albumSongs.get(0));
+                intent.putExtra("songs", albumSongs);
+                intent.putExtra("isPersonalAdapter", false);
+                getContext().sendBroadcast(intent);
+            } else {
+                // Query Firestore for all songs
+                firebaseFirestore.collection("Songs")
+                        .get()
+                        .addOnSuccessListener(queryDocumentSnapshots -> {
+                            if (!queryDocumentSnapshots.isEmpty()) {
+                                for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                                    String id = document.getId().trim();
+                                    String duration = document.getString("duration").trim();
+                                    String image = document.getString("image").trim();
+                                    String link = document.getString("link").trim();
+                                    String title = document.getString("title").trim();
+                                    String lyric = document.getString("lyric");
+                                    int like = document.getLong("likes").intValue();
+                                    Timestamp release = document.getTimestamp("release");
+                                    String idAlbum = document.getString("idAlbum").trim();
+                                    String idSinger = document.getString("idSinger").trim();
+                                    String idBanner = document.getString("idBanner");
 
+                                    Song song = new Song(id, duration, image, link, title, lyric, like, release, idAlbum, idSinger, idBanner);
+
+                                    songs.add(song);
+                                }
+                                playSong(albumSongs.get(0));
+                                Intent intent = new Intent("sendSong");
+                                intent.putExtra("song", albumSongs.get(0));
+                                intent.putExtra("songs", songs);
+                                intent.putExtra("isPersonalAdapter", false);
+                                getContext().sendBroadcast(intent);
+                            } else {
+                                Log.d("No song found", "Empty Firestore collection");
+                            }
+                        })
+                        .addOnFailureListener(e -> Log.d("Error getting songs", e.getMessage()));
+            }
+        });
+    }
+
+    private void playSong(Song firstSong) {
+        if (PersonalMusicAdapter.personalSongPlayer != null && PersonalMusicAdapter.personalSongPlayer.isPlaying()) {
+            PersonalMusicAdapter.personalSongPlayer.stop();
+            PersonalMusicAdapter.personalSongPlayer.release();
+            PersonalMusicAdapter.personalSongPlayer = null;
+        }
+
+        if (NewSongAdapter.newSongPlayer != null && NewSongAdapter.newSongPlayer.isPlaying()) {
+            NewSongAdapter.newSongPlayer.stop();
+            NewSongAdapter.newSongPlayer.release();
+            NewSongAdapter.newSongPlayer = null;
+        }
+
+        // Start playing the new song
+        NewSongAdapter.newSongPlayer = new MediaPlayer();
+        try {
+            NewSongAdapter.newSongPlayer.setDataSource(firstSong.getLink().trim());
+            NewSongAdapter.newSongPlayer.prepare();
+            NewSongAdapter.newSongPlayer.start();
+            Animation slide_up = AnimationUtils.loadAnimation(getContext(),
+                    R.anim.slide_up);
+            playerView.setVisibility(View.VISIBLE);
+            playerView.startAnimation(slide_up);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void init(View view) {
@@ -149,9 +228,10 @@ public class AlbumSongsFragment extends Fragment {
         backArrow = view.findViewById(R.id.backArrow);
         txtAlbumTitle = view.findViewById(R.id.txtAlbumTitle);
         firebaseFirestore = FirebaseFirestore.getInstance();
+        albumSongs = new ArrayList<>();
         songs = new ArrayList<>();
         playerView = getActivity().findViewById(R.id.playerView);
-        adapter = new NewSongAdapter(getContext(),null, songs, playerView);
+        adapter = new NewSongAdapter(getContext(),null, albumSongs, playerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false));
         recyclerView.setAdapter(adapter);
 
