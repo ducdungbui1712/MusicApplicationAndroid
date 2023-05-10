@@ -27,6 +27,7 @@ import com.bumptech.glide.Glide;
 import com.example.musicapplication.Activity.MainActivity;
 import com.example.musicapplication.Adapter.NewSongAdapter;
 import com.example.musicapplication.Adapter.PersonalMusicAdapter;
+import com.example.musicapplication.Model.MediaPlayerSingleton;
 import com.example.musicapplication.Model.Singer;
 import com.example.musicapplication.Model.Song;
 import com.example.musicapplication.R;
@@ -55,6 +56,7 @@ public class SingerSongsFragment extends Fragment {
     TextView textViewArtistName;
     Singer singer;
     RelativeLayout playerView;
+    MediaPlayer mediaPlayer;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -68,7 +70,7 @@ public class SingerSongsFragment extends Fragment {
             firebaseFirestore = FirebaseFirestore.getInstance();
             songs = new ArrayList<>();
             singerSongs = new ArrayList<>();
-
+            mediaPlayer = MediaPlayerSingleton.getInstance().getMediaPlayer();
             floatingActionButton.setBackgroundColor(Color.BLACK);
             collapsingToolbarLayout.setExpandedTitleColor(Color.WHITE);
             collapsingToolbarLayout.setExpandedTitleTextAppearance(R.style.ExpandedAppBar);
@@ -159,7 +161,6 @@ public class SingerSongsFragment extends Fragment {
                 Intent intent = new Intent("sendSong");
                 intent.putExtra("song", singerSongs.get(0));
                 intent.putExtra("songs", singerSongs);
-                intent.putExtra("isPersonalAdapter", false);
                 getContext().sendBroadcast(intent);
                 Log.d("singerSong", String.valueOf(singerSongs.size()));
                 Log.d("If1", "If1");
@@ -191,7 +192,6 @@ public class SingerSongsFragment extends Fragment {
                                 Intent intent = new Intent("sendSong");
                                 intent.putExtra("song", singerSongs.get(0));
                                 intent.putExtra("songs", songs);
-                                intent.putExtra("isPersonalAdapter", false);
                                 getContext().sendBroadcast(intent);
                             } else {
                                 Log.d("No song found", "Empty Firestore collection");
@@ -203,28 +203,14 @@ public class SingerSongsFragment extends Fragment {
     }
 
     private void playSong(Song song) {
-        if (PersonalMusicAdapter.personalSongPlayer != null && PersonalMusicAdapter.personalSongPlayer.isPlaying()) {
-            PersonalMusicAdapter.personalSongPlayer.stop();
-            PersonalMusicAdapter.personalSongPlayer.release();
-            PersonalMusicAdapter.personalSongPlayer = null;
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
         }
-
-        if (NewSongAdapter.newSongPlayer != null && NewSongAdapter.newSongPlayer.isPlaying()) {
-            NewSongAdapter.newSongPlayer.stop();
-            NewSongAdapter.newSongPlayer.release();
-            NewSongAdapter.newSongPlayer = null;
-        }
-
-        // Start playing the new song
-        NewSongAdapter.newSongPlayer = new MediaPlayer();
+        mediaPlayer.reset();
         try {
-            NewSongAdapter.newSongPlayer.setDataSource(song.getLink().trim());
-            NewSongAdapter.newSongPlayer.prepare();
-            NewSongAdapter.newSongPlayer.start();
-            Animation slide_up = AnimationUtils.loadAnimation(getContext(),
-                    R.anim.slide_up);
-            playerView.setVisibility(View.VISIBLE);
-            playerView.startAnimation(slide_up);
+            mediaPlayer.setDataSource(song.getLink());
+            mediaPlayer.prepare();
+            mediaPlayer.start();
         } catch (IOException e) {
             e.printStackTrace();
         }

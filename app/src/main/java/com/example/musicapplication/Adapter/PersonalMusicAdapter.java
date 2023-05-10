@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.musicapplication.Activity.MainActivity;
+import com.example.musicapplication.Model.MediaPlayerSingleton;
 import com.example.musicapplication.Model.Song;
 import com.example.musicapplication.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -34,7 +35,7 @@ public class PersonalMusicAdapter extends RecyclerView.Adapter<PersonalMusicAdap
     Context context;
     ArrayList<Song> songs;
 
-    static public MediaPlayer personalSongPlayer;
+    static public MediaPlayer mediaPlayer;
     FirebaseFirestore firebaseFirestore;
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
@@ -45,6 +46,10 @@ public class PersonalMusicAdapter extends RecyclerView.Adapter<PersonalMusicAdap
         this.context = context;
         this.songs = songs;
         this.playerView = playerView;
+        firebaseFirestore = FirebaseFirestore.getInstance();
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+        mediaPlayer = MediaPlayerSingleton.getInstance().getMediaPlayer();
     }
 
 
@@ -79,16 +84,6 @@ public class PersonalMusicAdapter extends RecyclerView.Adapter<PersonalMusicAdap
                 }
             }
         });
-
-//        firebaseFirestore.collection("Singer").document(song.getIdSinger().trim()).get().addOnCompleteListener(task -> {
-//            if (task.isSuccessful()) {
-//                DocumentSnapshot document = task.getResult();
-//                if (document.exists()) {
-//                    String singerName = document.getString("name").trim();
-//                    holder.artist.setText(singerName);
-//                }
-//            }
-//        });
 
         firebaseFirestore.collection("Users").document(firebaseUser.getUid().trim())
                 .get().addOnSuccessListener(documentSnapshot -> {
@@ -126,36 +121,21 @@ public class PersonalMusicAdapter extends RecyclerView.Adapter<PersonalMusicAdap
             Intent intent = new Intent("personalSong");
             intent.putExtra("song", song);
             intent.putExtra("songs", songs);
-            intent.putExtra("isPersonalAdapter", true);
             context.sendBroadcast(intent);
         });
 
     }
 
     public void playSong(Song song) {
-        if (personalSongPlayer != null && personalSongPlayer.isPlaying()) {
-            personalSongPlayer.stop();
-            personalSongPlayer.release();
-            personalSongPlayer = null;
+        MediaPlayer mediaPlayer = MediaPlayerSingleton.getInstance().getMediaPlayer();
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
         }
-
-
-        if (NewSongAdapter.newSongPlayer != null && NewSongAdapter.newSongPlayer.isPlaying()) {
-            NewSongAdapter.newSongPlayer.stop();
-            NewSongAdapter.newSongPlayer.release();
-            NewSongAdapter.newSongPlayer = null;
-        }
-
-        // Start playing the new song
-        personalSongPlayer = new MediaPlayer();
+        mediaPlayer.reset();
         try {
-            personalSongPlayer.setDataSource(song.getLink().trim());
-            personalSongPlayer.prepare();
-            personalSongPlayer.start();
-            Animation slide_up = AnimationUtils.loadAnimation(context,
-                    R.anim.slide_up);
-            playerView.setVisibility(View.VISIBLE);
-            playerView.startAnimation(slide_up);
+            mediaPlayer.setDataSource(song.getLink());
+            mediaPlayer.prepare();
+            mediaPlayer.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -178,9 +158,6 @@ public class PersonalMusicAdapter extends RecyclerView.Adapter<PersonalMusicAdap
             artist = itemView.findViewById(R.id.artist);
             time = itemView.findViewById(R.id.time);
             like_item = itemView.findViewById(R.id.like_personalSong_item);
-            firebaseFirestore = FirebaseFirestore.getInstance();
-            firebaseAuth = FirebaseAuth.getInstance();
-            firebaseUser = firebaseAuth.getCurrentUser();
         }
     }
 }

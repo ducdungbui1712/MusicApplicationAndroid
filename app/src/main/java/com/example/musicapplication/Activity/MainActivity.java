@@ -52,6 +52,7 @@ import com.example.musicapplication.Fragment.SingerFragment;
 import com.example.musicapplication.Fragment.NewSongFragment;
 import com.example.musicapplication.Fragment.PersonalMusicFragment;
 import com.example.musicapplication.Fragment.ProfileFragment;
+import com.example.musicapplication.Model.MediaPlayerSingleton;
 import com.example.musicapplication.Model.Song;
 import com.example.musicapplication.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -88,8 +89,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     CircleImageView imageViewUserAva;
     TextView txtUserName, txtUserMail;
     ObjectAnimator objectAnimator;
-    MediaPlayer mediaPlayer = new MediaPlayer();
-    public static boolean isPersonalAdapter = false;
+    MediaPlayer mediaPlayer;
     FrameLayout frameLayout;
 
     //player_view
@@ -122,8 +122,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if(intent != null){
                     song = intent.getParcelableExtra("song");
                     ArrayList<Song> ListSongs = intent.getParcelableArrayListExtra("songs");
-                    isPersonalAdapter = intent.getBooleanExtra("isPersonalAdapter", false);
-                    mediaPlayer = isPersonalAdapter ? PersonalMusicAdapter.personalSongPlayer : NewSongAdapter.newSongPlayer;
                     loadData(song);
                     updateSongList(ListSongs);
                 }
@@ -138,9 +136,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if(intent != null){
                     song = intent.getParcelableExtra("song");
                     ArrayList<Song> ListSongs = intent.getParcelableArrayListExtra("songs");
-                    isPersonalAdapter = intent.getBooleanExtra("isPersonalAdapter", false);
-                    mediaPlayer = isPersonalAdapter ? PersonalMusicAdapter.personalSongPlayer : NewSongAdapter.newSongPlayer;
-
                     loadData(song);
                     updateSongList(ListSongs);
                 }
@@ -216,17 +211,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             mediaPlayer.stop();
         }
         mediaPlayer.release();
-
     }
 
     public void loadData(Song song) {
-
-        Log.d("songID", song.getId());
-        Log.d("songs.size()", String.valueOf(songs.size()));
-        Log.d("originalSongs.size()", String.valueOf(originalSongs.size()));
-        Log.d("isPersonalAdapter", String.valueOf(isPersonalAdapter));
-        Log.d("isPersonalAdapter", String.valueOf(mediaPlayer));
+        // Get the MediaPlayer instance from the singleton class
+        mediaPlayer = MediaPlayerSingleton.getInstance().getMediaPlayer();
         //playerView
+        showPlayerView();
         songTitle.setText(song.getTitle().trim());
         getAlbumAndArtistTitle(song);
         timeDuration.setText(song.getDuration().trim());
@@ -321,11 +312,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (mediaPlayer != null && mediaPlayer.isPlaying()) {
             play.setImageResource(R.mipmap.pause);
             playMiniPlayer.setImageResource(R.mipmap.pause);
-            objectAnimator.start();
+            objectAnimator.start(); // resume animation when music is playing
         } else {
             play.setImageResource(R.mipmap.play);
             playMiniPlayer.setImageResource(R.mipmap.play);
-            objectAnimator.end();
+            objectAnimator.end(); // pause animation when music is paused
         }
     }
 
@@ -343,13 +334,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                 });
 
-//        firebaseFirestore.collection("Singer").document(song.getIdSinger().trim())
-//                .addSnapshotListener((documentSnapshot, e) -> {
-//                    if (documentSnapshot != null && documentSnapshot.exists()) {
-//                        String singerName = documentSnapshot.getString("name");
-//                        artistName.setText(singerName);
-//                    }
-//                });
     }
 
 
@@ -485,13 +469,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             miniPlayer.setVisibility(View.GONE);
                             if (mediaPlayer != null) {
                                 mediaPlayer.stop();
-                                mediaPlayer.release();
-                                mediaPlayer = null; // Set mediaPlayer to null after releasing it
-                                if(isPersonalAdapter){
-                                    PersonalMusicAdapter.personalSongPlayer = null;
-                                }else {
-                                    NewSongAdapter.newSongPlayer = null;
-                                }
                             }
                         } else {
                             // User did not drag down enough, so restore the Mini player to its original position
@@ -587,7 +564,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onStartTrackingTouch(SeekBar seekBar) {
                 mediaPlayer.pause();
                 play.setImageResource(R.mipmap.play);
-                objectAnimator.pause();
+                objectAnimator.end();
             }
 
             @Override
@@ -610,7 +587,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onStartTrackingTouch(SeekBar seekBar) {
                 mediaPlayer.pause();
                 playMiniPlayer.setImageResource(R.mipmap.play);
-                objectAnimator.pause();
+                objectAnimator.end();
             }
 
             @Override

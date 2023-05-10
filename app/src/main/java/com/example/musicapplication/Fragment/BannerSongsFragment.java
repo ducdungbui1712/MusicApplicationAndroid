@@ -20,6 +20,7 @@ import android.widget.RelativeLayout;
 
 import com.example.musicapplication.Adapter.NewSongAdapter;
 import com.example.musicapplication.Adapter.PersonalMusicAdapter;
+import com.example.musicapplication.Model.MediaPlayerSingleton;
 import com.example.musicapplication.Model.Song;
 import com.example.musicapplication.R;
 import com.google.firebase.Timestamp;
@@ -40,6 +41,7 @@ public class BannerSongsFragment extends Fragment {
     RelativeLayout playerView;
     ImageView backArrow;
     String idBannerItem;
+    MediaPlayer mediaPlayer;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -50,6 +52,7 @@ public class BannerSongsFragment extends Fragment {
         recyclerViewBannerSongs = view.findViewById(R.id.recyclerViewBannerSongs);
         backArrow = view.findViewById(R.id.backArrow);
         btnPlayAll = view.findViewById(R.id.btnPlayAll);
+        mediaPlayer = MediaPlayerSingleton.getInstance().getMediaPlayer();
         playerView = getActivity().findViewById(R.id.playerView);
         Bundle bundle = getArguments();
         if (bundle != null) {
@@ -75,34 +78,19 @@ public class BannerSongsFragment extends Fragment {
             Intent intent = new Intent("sendSong");
             intent.putExtra("song", songs.get(0));
             intent.putExtra("songs", songs);
-            intent.putExtra("isPersonalAdapter", false);
             getContext().sendBroadcast(intent);
         });
     }
 
     private void playSong(Song firstSong) {
-        if (PersonalMusicAdapter.personalSongPlayer != null && PersonalMusicAdapter.personalSongPlayer.isPlaying()) {
-            PersonalMusicAdapter.personalSongPlayer.stop();
-            PersonalMusicAdapter.personalSongPlayer.release();
-            PersonalMusicAdapter.personalSongPlayer = null;
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
         }
-
-        if (NewSongAdapter.newSongPlayer != null && NewSongAdapter.newSongPlayer.isPlaying()) {
-            NewSongAdapter.newSongPlayer.stop();
-            NewSongAdapter.newSongPlayer.release();
-            NewSongAdapter.newSongPlayer = null;
-        }
-
-        // Start playing the new song
-        NewSongAdapter.newSongPlayer = new MediaPlayer();
+        mediaPlayer.reset();
         try {
-            NewSongAdapter.newSongPlayer.setDataSource(firstSong.getLink().trim());
-            NewSongAdapter.newSongPlayer.prepare();
-            NewSongAdapter.newSongPlayer.start();
-            Animation slide_up = AnimationUtils.loadAnimation(getContext(),
-                    R.anim.slide_up);
-            playerView.setVisibility(View.VISIBLE);
-            playerView.startAnimation(slide_up);
+            mediaPlayer.setDataSource(firstSong.getLink());
+            mediaPlayer.prepare();
+            mediaPlayer.start();
         } catch (IOException e) {
             e.printStackTrace();
         }

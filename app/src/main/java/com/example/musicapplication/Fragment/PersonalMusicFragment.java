@@ -26,6 +26,7 @@ import com.example.musicapplication.Activity.MainActivity;
 import com.example.musicapplication.Adapter.NewSongAdapter;
 import com.example.musicapplication.Adapter.PersonalMusicAdapter;
 import com.example.musicapplication.Model.Album;
+import com.example.musicapplication.Model.MediaPlayerSingleton;
 import com.example.musicapplication.Model.Song;
 import com.example.musicapplication.R;
 import com.google.firebase.Timestamp;
@@ -52,6 +53,7 @@ public class PersonalMusicFragment extends Fragment {
     PersonalMusicAdapter personalMusicAdapter;
     RelativeLayout playerView;
     Button btnPlayAll;
+    MediaPlayer mediaPlayer;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -69,6 +71,7 @@ public class PersonalMusicFragment extends Fragment {
         firebaseAuth = FirebaseAuth.getInstance();
         recyclerViewPersonalSong = view.findViewById(R.id.recyclerViewPersonalSong);
         btnPlayAll = view.findViewById(R.id.btnPlayAll);
+        mediaPlayer = MediaPlayerSingleton.getInstance().getMediaPlayer();
         playerView = getActivity().findViewById(R.id.playerView);
         personalSongs = new ArrayList<>();
         songs = new ArrayList<>();
@@ -136,7 +139,6 @@ public class PersonalMusicFragment extends Fragment {
                 Intent intent = new Intent("personalSong");
                 intent.putExtra("song", personalSongs.get(0));
                 intent.putExtra("songs", personalSongs);
-                intent.putExtra("isPersonalAdapter", true);
                 getContext().sendBroadcast(intent);
 
             } else if (personalSongs.size() == 0){
@@ -167,7 +169,6 @@ public class PersonalMusicFragment extends Fragment {
                                 Intent intent = new Intent("personalSong");
                                 intent.putExtra("song", personalSongs.get(0));
                                 intent.putExtra("songs", songs);
-                                intent.putExtra("isPersonalAdapter", true);
                                 getContext().sendBroadcast(intent);
                             } else {
                                 Log.d("No song found", "Empty Firestore collection");
@@ -179,28 +180,14 @@ public class PersonalMusicFragment extends Fragment {
     }
 
     private void playSong(Song firstSong) {
-        if (PersonalMusicAdapter.personalSongPlayer != null && PersonalMusicAdapter.personalSongPlayer.isPlaying()) {
-            PersonalMusicAdapter.personalSongPlayer.stop();
-            PersonalMusicAdapter.personalSongPlayer.release();
-            PersonalMusicAdapter.personalSongPlayer = null;
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
         }
-
-        if (NewSongAdapter.newSongPlayer != null && NewSongAdapter.newSongPlayer.isPlaying()) {
-            NewSongAdapter.newSongPlayer.stop();
-            NewSongAdapter.newSongPlayer.release();
-            NewSongAdapter.newSongPlayer = null;
-        }
-
-        // Start playing the new song
-        PersonalMusicAdapter.personalSongPlayer = new MediaPlayer();
+        mediaPlayer.reset();
         try {
-            PersonalMusicAdapter.personalSongPlayer.setDataSource(firstSong.getLink().trim());
-            PersonalMusicAdapter.personalSongPlayer.prepare();
-            PersonalMusicAdapter.personalSongPlayer.start();
-            Animation slide_up = AnimationUtils.loadAnimation(getContext(),
-                    R.anim.slide_up);
-            playerView.setVisibility(View.VISIBLE);
-            playerView.startAnimation(slide_up);
+            mediaPlayer.setDataSource(firstSong.getLink());
+            mediaPlayer.prepare();
+            mediaPlayer.start();
         } catch (IOException e) {
             e.printStackTrace();
         }

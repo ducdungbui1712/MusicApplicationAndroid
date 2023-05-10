@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.musicapplication.Activity.MainActivity;
+import com.example.musicapplication.Model.MediaPlayerSingleton;
 import com.example.musicapplication.Model.Song;
 import com.example.musicapplication.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -37,7 +38,8 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
     FirebaseFirestore firebaseFirestore;
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
-    static public MediaPlayer newSongPlayer;
+
+    static public MediaPlayer mediaPlayer;
     RelativeLayout playerView;
 
 
@@ -46,6 +48,10 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
         this.rankSongs = rankSongs;
         this.songs = songs;
         this.playerView = playerView;
+        firebaseFirestore = FirebaseFirestore.getInstance();
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+        mediaPlayer = MediaPlayerSingleton.getInstance().getMediaPlayer();
     }
 
     @NonNull
@@ -85,17 +91,6 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
                 }
             }
         });
-
-//        firebaseFirestore.collection("Singer").document(song.getIdSinger().trim()).get().addOnCompleteListener(task -> {
-//            if (task.isSuccessful()) {
-//                DocumentSnapshot document = task.getResult();
-//                if (document.exists()) {
-//                    String singerName = document.getString("name").trim();
-//
-//                    holder.artist.setText(singerName);
-//                }
-//            }
-//        });
 
         firebaseFirestore.collection("Users").document(firebaseUser.getUid().trim())
                 .addSnapshotListener((documentSnapshot, e) -> {
@@ -156,34 +151,19 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
             Intent intent = new Intent("sendSong");
             intent.putExtra("song", song);
             intent.putExtra("songs", songs);
-            intent.putExtra("isPersonalAdapter", false);
             context.sendBroadcast(intent);
         });
     }
 
     public void playSong(Song song) {
-        if (newSongPlayer != null && newSongPlayer.isPlaying()) {
-            newSongPlayer.stop();
-            newSongPlayer.release();
-            newSongPlayer = null;
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
         }
-
-        if (PersonalMusicAdapter.personalSongPlayer != null && PersonalMusicAdapter.personalSongPlayer.isPlaying()) {
-            PersonalMusicAdapter.personalSongPlayer.stop();
-            PersonalMusicAdapter.personalSongPlayer.release();
-            PersonalMusicAdapter.personalSongPlayer = null;
-        }
-
-        // Start playing the new song
-        newSongPlayer = new MediaPlayer();
+        mediaPlayer.reset();
         try {
-            newSongPlayer.setDataSource(song.getLink().trim());
-            newSongPlayer.prepare();
-            newSongPlayer.start();
-            Animation slide_up = AnimationUtils.loadAnimation(context,
-                    R.anim.slide_up);
-            playerView.setVisibility(View.VISIBLE);
-            playerView.startAnimation(slide_up);
+            mediaPlayer.setDataSource(song.getLink());
+            mediaPlayer.prepare();
+            mediaPlayer.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -211,9 +191,6 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.ViewHold
             artist = itemView.findViewById(R.id.artist);
             time = itemView.findViewById(R.id.time);
             like_item = itemView.findViewById(R.id.like_newSong_item);
-            firebaseFirestore = FirebaseFirestore.getInstance();
-            firebaseAuth = FirebaseAuth.getInstance();
-            firebaseUser = firebaseAuth.getCurrentUser();
         }
     }
 }

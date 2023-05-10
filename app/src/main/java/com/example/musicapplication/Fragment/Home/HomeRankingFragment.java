@@ -53,6 +53,7 @@ public class HomeRankingFragment extends Fragment {
             FragmentTransaction fragmentTransaction = ((AppCompatActivity)getContext()).getSupportFragmentManager().beginTransaction();
             fragmentTransaction.replace(R.id.fragmentLayout,rankingSongFragment);
             fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+            fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
         });
         return view;
