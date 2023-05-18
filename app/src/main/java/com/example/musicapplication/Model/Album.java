@@ -7,12 +7,14 @@ import androidx.annotation.NonNull;
 
 public class Album implements Parcelable {
     String id;
+    String idBanner;
     String image;
     String singer;
     String title;
 
-    public Album(String id, String image, String singer, String title) {
+    public Album(String id, String idBanner, String image, String singer, String title) {
         this.id = id;
+        this.idBanner = idBanner;
         this.image = image;
         this.singer = singer;
         this.title = title;
@@ -20,6 +22,7 @@ public class Album implements Parcelable {
 
     protected Album(Parcel in) {
         id = in.readString();
+        idBanner = in.readString();
         image = in.readString();
         singer = in.readString();
         title = in.readString();
@@ -77,6 +80,7 @@ public class Album implements Parcelable {
     @Override
     public void writeToParcel(@NonNull Parcel parcel, int i) {
         parcel.writeString(id);
+        parcel.writeString(idBanner);
         parcel.writeString(image);
         parcel.writeString(singer);
         parcel.writeString(title);

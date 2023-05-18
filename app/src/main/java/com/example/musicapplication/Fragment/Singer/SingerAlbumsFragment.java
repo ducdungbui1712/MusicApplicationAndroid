@@ -66,10 +66,11 @@ public class SingerAlbumsFragment extends Fragment {
                     if (!queryDocumentSnapshots.isEmpty()) {
                         for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
                             String id = documentSnapshot.getId().trim();
+                            String idBanner = documentSnapshot.getString("idBanner");
                             String image = documentSnapshot.getString("image").trim();
                             String singer = documentSnapshot.getString("singer").trim();
                             String title = documentSnapshot.getString("title").trim();
-                            Album album = new Album(id, image, singer, title);
+                            Album album = new Album(id, idBanner, image, singer, title);
                             albums.add(album);
                         }
                         adapter.notifyDataSetChanged();

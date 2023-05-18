@@ -8,15 +8,22 @@ import androidx.annotation.NonNull;
 public class Banner implements Parcelable {
     String id;
     String image;
+    String checkBanner;
 
-    public Banner(String id, String image) {
+    public String getCheckBanner() {
+        return checkBanner;
+    }
+
+    public Banner(String id, String image, String checkBanner) {
         this.id = id;
         this.image = image;
+        this.checkBanner = checkBanner;
     }
 
     protected Banner(Parcel in) {
         id = in.readString();
         image = in.readString();
+        checkBanner = in.readString();
     }
 
     public static final Creator<Banner> CREATOR = new Creator<Banner>() {
@@ -40,6 +47,7 @@ public class Banner implements Parcelable {
     public void writeToParcel(@NonNull Parcel parcel, int i) {
         parcel.writeString(id);
         parcel.writeString(image);
+        parcel.writeString(checkBanner);
     }
 
     public String getId() {

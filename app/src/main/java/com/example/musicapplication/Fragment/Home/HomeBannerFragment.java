@@ -15,6 +15,7 @@ import com.denzcoskun.imageslider.ImageSlider;
 import com.denzcoskun.imageslider.constants.ScaleTypes;
 import com.denzcoskun.imageslider.interfaces.ItemClickListener;
 import com.denzcoskun.imageslider.models.SlideModel;
+import com.example.musicapplication.Fragment.BannerAlbumsFragment;
 import com.example.musicapplication.Fragment.BannerSongsFragment;
 import com.example.musicapplication.Fragment.Singer.SingerTabFragment;
 import com.example.musicapplication.Model.Album;
@@ -47,8 +48,9 @@ public class HomeBannerFragment extends Fragment {
                             // Lấy giá trị của field image trong tài liệu hiện tại và add vào imageList
                             String id = document.getString("id");
                             String image = document.getString("image");
+                            String checkBanner = document.getString("checkBanner");
                             imageList.add(new SlideModel(image, ScaleTypes.FIT));
-                            Banner banner = new Banner(id,image);
+                            Banner banner = new Banner(id,image, checkBanner);
                             banners.add(banner);
                         }
                         // Hiển thị danh sách hình ảnh trong imageSlider
@@ -58,18 +60,34 @@ public class HomeBannerFragment extends Fragment {
                             @Override
                             public void onItemSelected(int i) {
                                 Log.d("TAG", "pos :" + banners.get(i).getId());
+                                Log.d("Tag", banners.get(i).getCheckBanner());
                                 Bundle bundle = new Bundle();
                                 bundle.putString("idBanner", banners.get(i).getId());
-                                BannerSongsFragment bannerSongsFragment = new BannerSongsFragment();
-                                bannerSongsFragment.setArguments(bundle);
+                                if(banners.get(i).getCheckBanner().equals("Album")){
+                                    BannerAlbumsFragment bannerAlbumsFragment = new BannerAlbumsFragment();
+                                    bannerAlbumsFragment.setArguments(bundle);
 
-                                FragmentTransaction fragmentTransaction = ((AppCompatActivity)getContext())
-                                        .getSupportFragmentManager()
-                                        .beginTransaction();
-                                fragmentTransaction.replace(R.id.fragmentLayout, bannerSongsFragment);
-                                fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-                                fragmentTransaction.addToBackStack(null);
-                                fragmentTransaction.commit();
+                                    FragmentTransaction fragmentTransaction = ((AppCompatActivity)getContext())
+                                            .getSupportFragmentManager()
+                                            .beginTransaction();
+                                    fragmentTransaction.replace(R.id.fragmentLayout, bannerAlbumsFragment);
+                                    fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                                    fragmentTransaction.addToBackStack(null);
+                                    fragmentTransaction.commit();
+
+                                }else {
+                                    BannerSongsFragment bannerSongsFragment = new BannerSongsFragment();
+                                    bannerSongsFragment.setArguments(bundle);
+
+                                    FragmentTransaction fragmentTransaction = ((AppCompatActivity)getContext())
+                                            .getSupportFragmentManager()
+                                            .beginTransaction();
+                                    fragmentTransaction.replace(R.id.fragmentLayout, bannerSongsFragment);
+                                    fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                                    fragmentTransaction.addToBackStack(null);
+                                    fragmentTransaction.commit();
+                                }
+
                             }
 
                             @Override

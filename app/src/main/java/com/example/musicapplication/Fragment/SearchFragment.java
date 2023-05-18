@@ -155,11 +155,12 @@ public class SearchFragment extends Fragment {
                             albums = new ArrayList<>();
                             for (DocumentSnapshot document : task.getResult()) {
                                 String id = document.getId().trim();
+                                String idBanner = document.getString("idBanner");
                                 String image = document.getString("image").trim();
                                 String singer = document.getString("singer").trim();
                                 String title = document.getString("title").trim();
 
-                                Album album = new Album(id, image, singer, title);
+                                Album album = new Album(id, idBanner, image, singer, title);
                                 albums.add(album);
 
                             }
